@@ -22,7 +22,11 @@ type RevenueChartProps = {
 
 const periods: readonly Period[] = ["7d", "30d", "90d"];
 
-export function RevenueChart({ data, period, onPeriodChange }: RevenueChartProps) {
+export function RevenueChart({
+  data,
+  period,
+  onPeriodChange,
+}: RevenueChartProps) {
   return (
     <Card>
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -44,9 +48,18 @@ export function RevenueChart({ data, period, onPeriodChange }: RevenueChartProps
       <CardContent>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ left: 0, right: 12, top: 8, bottom: 0 }}>
+            <LineChart
+              data={data}
+              margin={{ left: 0, right: 12, top: 8, bottom: 0 }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={10} minTickGap={24} />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={10}
+                minTickGap={24}
+              />
               <YAxis
                 tickLine={false}
                 axisLine={false}
@@ -56,7 +69,10 @@ export function RevenueChart({ data, period, onPeriodChange }: RevenueChartProps
               />
               <Tooltip
                 cursor={{ stroke: "var(--border)" }}
-                formatter={(value) => [formatCompactNumber(Number(value)), "Revenue"]}
+                formatter={(value) => [
+                  formatCompactNumber(Number(value)),
+                  "Revenue",
+                ]}
               />
               <Line
                 type="monotone"

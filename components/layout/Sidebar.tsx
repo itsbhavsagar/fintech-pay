@@ -9,6 +9,7 @@ import {
   Settings,
   WalletCards,
   Landmark,
+  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -18,6 +19,7 @@ const navItems = [
   { href: "/", label: "Dashboard", icon: Home },
   { href: "/transactions", label: "Transactions", icon: CreditCard },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/ai-intelligence", label: "Intelligence", icon: Zap },
   { href: "/payment-links", label: "Payment Links", icon: Link2 },
   { href: "/settlements", label: "Settlements", icon: Landmark },
   { href: "/ai-assistant", label: "AI Assistant", icon: Bot },
@@ -35,13 +37,18 @@ export function Sidebar() {
         </div>
         <div>
           <p className="text-sm font-semibold leading-none">PaySense</p>
-          <p className="mt-1 text-xs text-muted-foreground">Merchant payments</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Merchant payments
+          </p>
         </div>
       </div>
       <nav className="flex-1 space-y-1 p-3">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          const active =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
 
           return (
             <Link
