@@ -11,7 +11,10 @@ import { TransactionTable } from "@/components/dashboard/TransactionTable";
 import { TransactionDetail } from "@/components/transactions/TransactionDetail";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAnalytics } from "@/hooks/useAnalytics";
-import { useTransactions, type TransactionFilters } from "@/hooks/useTransactions";
+import {
+  useTransactions,
+  type TransactionFilters,
+} from "@/hooks/useTransactions";
 import { formatCompactNumber, formatPercent } from "@/lib/utils";
 import type { Period, TransactionDto } from "@/types/domain";
 
@@ -25,10 +28,14 @@ const recentFilters: TransactionFilters = {
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState<Period>("30d");
-  const [selectedTransaction, setSelectedTransaction] = useState<TransactionDto | null>(null);
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<TransactionDto | null>(null);
   const analytics = useAnalytics(period);
   const transactions = useTransactions(recentFilters);
-  const recentTransactions = transactions.data?.pages.flatMap((page) => page.transactions).slice(0, 10) ?? [];
+  const recentTransactions =
+    transactions.data?.pages
+      .flatMap((page) => page.transactions)
+      .slice(0, 10) ?? [];
 
   if (analytics.isLoading) {
     return (
@@ -52,7 +59,11 @@ export default function DashboardPage() {
   const data = analytics.data;
 
   if (!data) {
-    return <p className="text-sm text-muted-foreground">Analytics data is unavailable.</p>;
+    return (
+      <p className="text-sm text-muted-foreground">
+        Analytics data is unavailable.
+      </p>
+    );
   }
 
   return (
@@ -84,7 +95,11 @@ export default function DashboardPage() {
         />
       </div>
 
-      <RevenueChart data={data.dailyRevenue} period={period} onPeriodChange={setPeriod} />
+      <RevenueChart
+        data={data.dailyRevenue}
+        period={period}
+        onPeriodChange={setPeriod}
+      />
 
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <Card>
@@ -92,7 +107,10 @@ export default function DashboardPage() {
             <CardTitle>Recent Transactions</CardTitle>
           </CardHeader>
           <CardContent>
-            <TransactionTable transactions={recentTransactions} onSelect={setSelectedTransaction} />
+            <TransactionTable
+              transactions={recentTransactions}
+              onSelect={setSelectedTransaction}
+            />
           </CardContent>
         </Card>
         <CurrencyBreakdownChart data={data.currencyBreakdown} />

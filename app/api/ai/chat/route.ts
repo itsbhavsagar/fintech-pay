@@ -8,7 +8,7 @@ import { streamChat, type GroqChatMessage } from "@/lib/groq";
 import { prisma } from "@/lib/prisma";
 
 const chatSchema = z.object({
-  sessionId: z.string().min(1).optional(),
+  sessionId: z.string().min(1).nullish(),
   message: z.string().min(1).max(1_000),
 });
 
