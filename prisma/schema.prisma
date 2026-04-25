@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String?
+  password     String
+  businessName String?
+  apiKey       String        @unique @default(cuid())
+  webhookUrl   String?
+  createdAt    DateTime      @default(now())
+  transactions Transaction[]
+  paymentLinks PaymentLink[]
+  settlements  Settlement[]
+  sessions     AiSession[]
+  chunks       Chunk[]
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount        Float
+  currency      String
+  status        String
+  country       String
+  paymentMethod String
+  razorpayId    String?
+  description   String?
+  createdAt     DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model PaymentLink {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  amount         Float
+  currency       String
+  razorpayLinkId String?
+  shortUrl       String?
+  status         String
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Settlement {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Float
+  currency  String
+  status    String
+  settledAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model AiSession {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  AiMessage[]
+  createdAt DateTime    @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model AiMessage {
+  id        String    @id @default(cuid())
+  sessionId String
+  session   AiSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String
+  content   String
+  createdAt DateTime  @default(now())
+
+  @@index([sessionId, createdAt])
+}
+
+model Chunk {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text      String
+  embedding Float[]
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
