@@ -2,8 +2,6 @@
 
 **Real-time payment analytics and AI-powered insights for merchants.** Inspired by [xPay](https://www.ycombinator.com/companies/xpay) (YC W24), built as a portfolio project to demonstrate senior-level full-stack engineering for fintech products.
 
-🔗 [Live Demo](#) (Coming soon) | 📖 [GitHub](#) | [📝 Technical Blog Post](#)
-
 ---
 
 ## Screenshots
