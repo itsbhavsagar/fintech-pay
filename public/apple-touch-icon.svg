@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" fill="none">
+  <!-- Background circle -->
+  <circle cx="90" cy="90" r="85" fill="url(#grad)" stroke="none"/>
+  
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Card icon -->
+  <g transform="translate(50, 60)">
+    <!-- Card base -->
+    <rect x="0" y="0" width="80" height="55" rx="6" fill="white" opacity="0.95"/>
+    
+    <!-- Chip -->
+    <rect x="12" y="12" width="16" height="16" rx="2" fill="#fbbf24"/>
+    
+    <!-- Stripe -->
+    <rect x="0" y="38" width="80" height="10" fill="#1f2937"/>
+    
+    <!-- Dots -->
+    <circle cx="60" cy="44" r="2" fill="white"/>
+    <circle cx="68" cy="44" r="2" fill="white"/>
+    <circle cx="76" cy="44" r="2" fill="white"/>
+  </g>
+  
+  <!-- Pulse/intelligence indicator -->
+  <g transform="translate(130, 70)">
+    <circle cx="0" cy="0" r="12" fill="#10b981" opacity="0.85"/>
+    <circle cx="0" cy="0" r="18" fill="none" stroke="#10b981" stroke-width="2" opacity="0.5"/>
+  </g>
+</svg>

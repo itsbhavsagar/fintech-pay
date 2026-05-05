@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { fetchJson } from "@/lib/fetcher";
 
 export interface Anomaly {
@@ -36,7 +36,7 @@ export function useIntelligence() {
   return useQuery({
     queryKey: ["intelligence"],
     queryFn: () => fetchJson<IntelligenceResponse>("/api/intelligence"),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    placeholderData: keepPreviousData,
   });
 }
 

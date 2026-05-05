@@ -60,7 +60,6 @@ function formatCurrency(amount: number, currency: string): string {
 function computeAnomalies(transactions: Transaction[]): Anomaly[] {
   const anomalies: Anomaly[] = [];
 
-  // Group transactions by date
   const dailyMap = new Map<
     string,
     {
@@ -89,7 +88,6 @@ function computeAnomalies(transactions: Transaction[]): Anomaly[] {
     }
   }
 
-  // Check success rate anomalies
   let totalByDay = 0;
   let totalSuccessfulByDay = 0;
   for (const dayData of dailyMap.values()) {
@@ -148,7 +146,6 @@ function computeAnomalies(transactions: Transaction[]): Anomaly[] {
     }
   }
 
-  // Check volume spikes
   const volumeByDay = new Map<string, number>();
   for (const [day, dayData] of dailyMap) {
     volumeByDay.set(day, dayData.transactions.length);
@@ -171,7 +168,6 @@ function computeAnomalies(transactions: Transaction[]): Anomaly[] {
     }
   }
 
-  // Check currency failure rates
   const currencyStats = new Map<string, { total: number; failed: number }>();
   for (const tx of transactions) {
     const current = currencyStats.get(tx.currency) ?? {
@@ -192,7 +188,7 @@ function computeAnomalies(transactions: Transaction[]): Anomaly[] {
         anomalies.push({
           type: "failure_rate",
           severity: failureRate > 40 ? "critical" : "warning",
-          date: "", // Not date-specific
+          date: "",
           description: `${currency} has ${failureRate.toFixed(0)}% failure rate (${stats.failed}/${stats.total} transactions)`,
           details: {
             currency,
@@ -218,7 +214,6 @@ function calculateForecast(dailyRevenue: Map<string, number>): {
   const data: ForecastData[] = [];
   const today = startOfUtcDay(new Date());
 
-  // Collect last 30 days
   const days: [string, number][] = [];
   for (let i = 0; i < 30; i++) {
     const day = dayKey(addDays(today, -(29 - i)));
@@ -234,7 +229,6 @@ function calculateForecast(dailyRevenue: Map<string, number>): {
     });
   }
 
-  // Simple linear regression for 7-day forecast
   const n = days.length;
   let sumX = 0;
   let sumY = 0;
@@ -251,7 +245,6 @@ function calculateForecast(dailyRevenue: Map<string, number>): {
   const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
   const intercept = (sumY - slope * sumX) / n;
 
-  // Generate 7-day forecast
   let forecastTotal = 0;
   for (let i = 0; i < 7; i++) {
     const forecastDay = n + i;
@@ -274,8 +267,6 @@ function calculateForecast(dailyRevenue: Map<string, number>): {
 export async function GET(): Promise<NextResponse> {
   try {
     const user = await requireSessionUser();
-
-    // Fetch last 30 days transactions
     const today = startOfUtcDay(new Date());
     const startDate = addDays(today, -29);
 
@@ -291,10 +282,7 @@ export async function GET(): Promise<NextResponse> {
       },
     });
 
-    // Compute anomalies
     const anomalies = computeAnomalies(transactions);
-
-    // Calculate daily revenue for forecast
     const dailyRevenue = new Map<string, number>();
     for (let i = 0; i < 30; i++) {
       const day = dayKey(addDays(today, -(29 - i)));
@@ -308,11 +296,9 @@ export async function GET(): Promise<NextResponse> {
       }
     }
 
-    // Calculate forecast
     const { data: forecastData, forecastTotal } =
       calculateForecast(dailyRevenue);
 
-    // Compute top insights
     const dayOfWeekStats = new Map<
       string,
       { successful: number; total: number }
@@ -340,7 +326,6 @@ export async function GET(): Promise<NextResponse> {
       dayOfWeekStats.set(dayName, current);
     }
 
-    // Best performing day
     let bestDay = "Monday";
     let bestRate = 0;
     for (const [day, stats] of dayOfWeekStats) {
@@ -351,7 +336,6 @@ export async function GET(): Promise<NextResponse> {
       }
     }
 
-    // Highest revenue country
     const countryRevenue = new Map<string, number>();
     for (const tx of transactions) {
       countryRevenue.set(
@@ -373,7 +357,7 @@ export async function GET(): Promise<NextResponse> {
         break;
       }
     }
-    // Get top country more reliably
+
     let maxRevenue = 0;
     for (const [country, revenue] of countryRevenue) {
       if (revenue > maxRevenue) {
@@ -381,7 +365,7 @@ export async function GET(): Promise<NextResponse> {
         topCountry = country;
       }
     }
-    // Find currency for top country
+
     for (const tx of transactions) {
       if (tx.country === topCountry) {
         topCurrency = tx.currency;
@@ -389,7 +373,6 @@ export async function GET(): Promise<NextResponse> {
       }
     }
 
-    // Payment method with highest failure rate
     const methodStats = new Map<string, { total: number; failed: number }>();
     for (const tx of transactions) {
       const current = methodStats.get(tx.paymentMethod) ?? {

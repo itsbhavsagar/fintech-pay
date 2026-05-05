@@ -1,0 +1,9 @@
+import Image from "next/image";
+
+export function Logo() {
+  return (
+    <div className="flex size-9 items-center justify-center rounded-md bg-primary">
+      <Image src="/logo.svg" alt="PaySense" width={24} height={24} priority />
+    </div>
+  );
+}

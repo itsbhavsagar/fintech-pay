@@ -156,17 +156,44 @@ function buildTransactions(
 
     return {
       userId,
-      amount: moneyBetween(profile.amountRange[0], profile.amountRange[1]),
+
+      amount:
+        currency === "INR"
+          ? Math.round(
+              moneyBetween(profile.amountRange[0], profile.amountRange[1]),
+            )
+          : Math.round(
+              moneyBetween(profile.amountRange[0], profile.amountRange[1]) *
+                100,
+            ),
+
       currency,
       status,
+
+      paymentState:
+        status === "success"
+          ? "captured"
+          : status === "failed"
+            ? "failed"
+            : "created",
+
       country: profile.country,
       paymentMethod,
+
       razorpayId:
         status === "pending"
           ? null
           : `pay_test_${suffix}_${profile.country.toLowerCase()}`,
+
+      idempotencyKey: `idem_${userId}_${suffix}`,
+
+      retryCount: status === "failed" ? Math.floor(random() * 3) : 0,
+      lastRetryAt: status === "failed" ? new Date() : null,
+
       description: `${pickOne(descriptions)} - ${profile.country}`,
+
       createdAt: createdAtWithinLast90Days(),
+      updatedAt: new Date(),
     };
   });
 }

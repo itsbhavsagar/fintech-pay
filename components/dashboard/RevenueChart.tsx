@@ -11,12 +11,14 @@ import {
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SkeletonChart } from "@/components/ui/skeleton";
 import { formatCompactNumber } from "@/lib/utils";
 import type { DailyRevenuePoint, Period } from "@/types/domain";
 
 type RevenueChartProps = {
   data: DailyRevenuePoint[];
   period: Period;
+  isFetching?: boolean;
   onPeriodChange: (period: Period) => void;
 };
 
@@ -25,6 +27,7 @@ const periods: readonly Period[] = ["7d", "30d", "90d"];
 export function RevenueChart({
   data,
   period,
+  isFetching = false,
   onPeriodChange,
 }: RevenueChartProps) {
   return (
@@ -39,6 +42,7 @@ export function RevenueChart({
               size="sm"
               onClick={() => onPeriodChange(item)}
               className="h-7 px-3"
+              disabled={isFetching}
             >
               {item}
             </Button>
@@ -46,45 +50,49 @@ export function RevenueChart({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={data}
-              margin={{ left: 0, right: 12, top: 8, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis
-                dataKey="date"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={10}
-                minTickGap={24}
-              />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                tickMargin={10}
-                width={72}
-                tickFormatter={(value) => formatCompactNumber(Number(value))}
-              />
-              <Tooltip
-                cursor={{ stroke: "var(--border)" }}
-                formatter={(value) => [
-                  formatCompactNumber(Number(value)),
-                  "Revenue",
-                ]}
-              />
-              <Line
-                type="monotone"
-                dataKey="revenue"
-                stroke="var(--chart-1)"
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        {isFetching ? (
+          <SkeletonChart />
+        ) : (
+          <div className="h-72 transition-opacity">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={data}
+                margin={{ left: 0, right: 12, top: 8, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={10}
+                  minTickGap={24}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={10}
+                  width={72}
+                  tickFormatter={(value) => formatCompactNumber(Number(value))}
+                />
+                <Tooltip
+                  cursor={{ stroke: "var(--border)" }}
+                  formatter={(value) => [
+                    formatCompactNumber(Number(value)),
+                    "Revenue",
+                  ]}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="var(--chart-1)"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

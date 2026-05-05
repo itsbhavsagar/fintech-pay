@@ -98,19 +98,15 @@ export async function POST(request: Request): Promise<Response> {
     const user = await requireSessionUser();
     const input = await parseJsonBody(request, querySchema);
 
-    // Fetch transactions for context
     let transactions: Transaction[] = [];
 
     if (input.date) {
-      // Parse date string (e.g., "Apr 15" or "2025-04-15")
       let targetDate = new Date(input.date);
       if (isNaN(targetDate.getTime())) {
-        // Try parsing "Mon, Apr 15"
         targetDate = new Date(input.date);
       }
 
       if (isNaN(targetDate.getTime())) {
-        // Default to today
         targetDate = new Date();
       }
 
@@ -127,7 +123,6 @@ export async function POST(request: Request): Promise<Response> {
         },
       });
     } else {
-      // Get last 7 days if no specific date
       const today = startOfUtcDay(new Date());
       const sevenDaysAgo = addDays(today, -6);
 
@@ -156,7 +151,6 @@ export async function POST(request: Request): Promise<Response> {
       },
     ];
 
-    // Stream response
     let fullContent = "";
 
     const encoder = new TextEncoder();

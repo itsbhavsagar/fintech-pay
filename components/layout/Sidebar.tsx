@@ -7,12 +7,14 @@ import {
   Home,
   Link2,
   Settings,
-  WalletCards,
   Landmark,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import { Logo } from "@/components/Logo";
+import { fetchJson } from "@/lib/fetcher";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -28,13 +30,40 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const queryClient = useQueryClient();
+
+  const handlePrefetch = (href: string) => {
+    // Prefetch data based on the route
+    if (href === "/" || href === "/analytics") {
+      queryClient.prefetchQuery({
+        queryKey: ["analytics", "30d"],
+        queryFn: () => fetchJson(`/api/analytics?period=30d`),
+      });
+    } else if (href === "/transactions") {
+      queryClient.prefetchQuery({
+        queryKey: [
+          "transactions",
+          { search: "", status: "all", currency: "all", from: "", to: "" },
+        ],
+        queryFn: () => fetchJson(`/api/transactions?limit=10`),
+      });
+    } else if (href === "/payment-links") {
+      queryClient.prefetchQuery({
+        queryKey: ["payment-links"],
+        queryFn: () => fetchJson(`/api/payment-links`),
+      });
+    } else if (href === "/ai-intelligence") {
+      queryClient.prefetchQuery({
+        queryKey: ["intelligence"],
+        queryFn: () => fetchJson(`/api/intelligence`),
+      });
+    }
+  };
 
   return (
     <aside className="hidden h-screen w-64 shrink-0 border-r bg-card lg:sticky lg:top-0 lg:flex lg:flex-col">
       <div className="flex h-16 items-center gap-3 border-b px-5">
-        <div className="flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <WalletCards className="size-5" />
-        </div>
+        <Logo />
         <div>
           <p className="text-sm font-semibold leading-none">PaySense</p>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -54,6 +83,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onMouseEnter={() => handlePrefetch(item.href)}
               className={cn(
                 "flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
                 active && "bg-accent text-accent-foreground",

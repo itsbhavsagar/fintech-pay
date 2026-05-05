@@ -3,6 +3,12 @@ export type PaymentLinkStatus = "active" | "expired" | "paid";
 export type SettlementStatus = "pending" | "processing" | "settled";
 export type Period = "7d" | "30d" | "90d";
 export type ThemePreference = "light" | "dark" | "system";
+export type PaymentState =
+  | "created"
+  | "authorized"
+  | "captured"
+  | "failed"
+  | "retrying";
 
 export type UserDto = {
   id: string;
@@ -19,9 +25,11 @@ export type TransactionDto = {
   amount: number;
   currency: string;
   status: TransactionStatus;
+  paymentState: PaymentState;
   country: string;
   paymentMethod: string;
   razorpayId: string | null;
+  idempotencyKey: string | null;
   description: string | null;
   createdAt: string;
 };

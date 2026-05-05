@@ -1,6 +1,13 @@
 "use client";
 
-import { KeyRound, Loader2, RotateCcw, Save, Send, UserRound } from "lucide-react";
+import {
+  KeyRound,
+  Loader2,
+  RotateCcw,
+  Save,
+  Send,
+  UserRound,
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -88,7 +95,11 @@ export default function SettingsPage() {
         method: "POST",
       }),
     onSuccess: (result) => {
-      setMessage(result.ok ? "Webhook test delivered" : `Webhook returned ${result.status}`);
+      setMessage(
+        result.ok
+          ? "Webhook test delivered"
+          : `Webhook returned ${result.status}`,
+      );
     },
   });
 
@@ -107,14 +118,29 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" value={name} onChange={(event) => setName(event.target.value)} />
+            <Input
+              id="name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="businessName">Business name</Label>
-            <Input id="businessName" value={businessName} onChange={(event) => setBusinessName(event.target.value)} />
+            <Input
+              id="businessName"
+              value={businessName}
+              onChange={(event) => setBusinessName(event.target.value)}
+            />
           </div>
-          <Button onClick={() => profileMutation.mutate()} disabled={profileMutation.isPending || !name || !businessName}>
-            {profileMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+          <Button
+            onClick={() => profileMutation.mutate()}
+            disabled={profileMutation.isPending || !name || !businessName}
+          >
+            {profileMutation.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Save className="size-4" />
+            )}
             Save Profile
           </Button>
         </CardContent>
@@ -131,8 +157,16 @@ export default function SettingsPage() {
           <div className="rounded-lg border bg-secondary p-4 font-mono text-sm">
             {currentUser ? maskSecret(currentUser.apiKey) : "Loading"}
           </div>
-          <Button variant="outline" onClick={() => apiKeyMutation.mutate()} disabled={apiKeyMutation.isPending}>
-            {apiKeyMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <RotateCcw className="size-4" />}
+          <Button
+            variant="outline"
+            onClick={() => apiKeyMutation.mutate()}
+            disabled={apiKeyMutation.isPending}
+          >
+            {apiKeyMutation.isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <RotateCcw className="size-4" />
+            )}
             Regenerate
           </Button>
         </CardContent>
@@ -154,12 +188,27 @@ export default function SettingsPage() {
             />
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => webhookMutation.mutate()} disabled={webhookMutation.isPending}>
-              {webhookMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+            <Button
+              onClick={() => webhookMutation.mutate()}
+              disabled={webhookMutation.isPending}
+            >
+              {webhookMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Save className="size-4" />
+              )}
               Save Webhook
             </Button>
-            <Button variant="outline" onClick={() => testWebhookMutation.mutate()} disabled={testWebhookMutation.isPending}>
-              {testWebhookMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+            <Button
+              variant="outline"
+              onClick={() => testWebhookMutation.mutate()}
+              disabled={testWebhookMutation.isPending}
+            >
+              {testWebhookMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Send className="size-4" />
+              )}
               Test Webhook
             </Button>
           </div>
@@ -183,7 +232,9 @@ export default function SettingsPage() {
               </Button>
             ))}
           </div>
-          {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
+          {message ? (
+            <p className="text-sm text-muted-foreground">{message}</p>
+          ) : null}
         </CardContent>
       </Card>
     </div>

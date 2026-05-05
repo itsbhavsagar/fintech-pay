@@ -2,6 +2,7 @@
 
 import { Loader2, Plus } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -40,18 +41,23 @@ export function CreateLinkModal() {
       return;
     }
 
-    await createPaymentLink.mutateAsync({
-      title: title.trim(),
-      amount: parsedAmount,
-      currency,
-      expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
-    });
+    try {
+      await createPaymentLink.mutateAsync({
+        title: title.trim(),
+        amount: parsedAmount,
+        currency,
+        expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
+      });
 
-    setTitle("");
-    setAmount("");
-    setCurrency("USD");
-    setExpiresAt("");
-    setOpen(false);
+      toast.success(`Payment link "${title.trim()}" created successfully`);
+      setTitle("");
+      setAmount("");
+      setCurrency("USD");
+      setExpiresAt("");
+      setOpen(false);
+    } catch (error) {
+      toast.error("Failed to create payment link");
+    }
   }
 
   return (
@@ -69,12 +75,25 @@ export function CreateLinkModal() {
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
-            <Input id="title" value={title} onChange={(event) => setTitle(event.target.value)} required />
+            <Input
+              id="title"
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              required
+            />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="amount">Amount</Label>
-              <Input id="amount" type="number" min="1" step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} required />
+              <Input
+                id="amount"
+                type="number"
+                min="1"
+                step="0.01"
+                value={amount}
+                onChange={(event) => setAmount(event.target.value)}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label>Currency</Label>
@@ -94,12 +113,25 @@ export function CreateLinkModal() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="expiresAt">Expiry date</Label>
-            <Input id="expiresAt" type="date" value={expiresAt} onChange={(event) => setExpiresAt(event.target.value)} />
+            <Input
+              id="expiresAt"
+              type="date"
+              value={expiresAt}
+              onChange={(event) => setExpiresAt(event.target.value)}
+            />
           </div>
-          {createPaymentLink.error ? <p className="text-sm text-destructive">{createPaymentLink.error.message}</p> : null}
+          {createPaymentLink.error ? (
+            <p className="text-sm text-destructive">
+              {createPaymentLink.error.message}
+            </p>
+          ) : null}
           <DialogFooter>
             <Button type="submit" disabled={createPaymentLink.isPending}>
-              {createPaymentLink.isPending ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
+              {createPaymentLink.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Plus className="size-4" />
+              )}
               Create
             </Button>
           </DialogFooter>

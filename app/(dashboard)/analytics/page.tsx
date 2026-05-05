@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -40,6 +41,7 @@ export default function AnalyticsPage() {
   const [period, setPeriod] = useState<Period>("30d");
   const analytics = useAnalytics(period);
   const data = analytics.data;
+  const isRefreshing = analytics.isFetching && Boolean(data);
   const maxHeatVolume = Math.max(...(data?.peakHours.map((point) => point.volume) ?? [0]), 0);
 
   return (
@@ -49,16 +51,19 @@ export default function AnalyticsPage() {
           <h2 className="text-xl font-semibold tracking-normal">Analytics</h2>
           <p className="text-sm text-muted-foreground">Revenue, reliability, and payment behavior across real transactions.</p>
         </div>
-        <div className="flex rounded-md border p-1">
-          {periods.map((item) => (
-            <Button key={item} size="sm" variant={period === item ? "secondary" : "ghost"} onClick={() => setPeriod(item)}>
-              {item}
-            </Button>
-          ))}
+        <div className="flex items-center gap-2">
+          {isRefreshing ? <Loader2 aria-label="Refreshing analytics" className="size-4 animate-spin text-muted-foreground" /> : null}
+          <div className="flex rounded-md border p-1">
+            {periods.map((item) => (
+              <Button key={item} size="sm" variant={period === item ? "secondary" : "ghost"} onClick={() => setPeriod(item)}>
+                {item}
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className={cn("grid gap-6 transition-opacity xl:grid-cols-2", isRefreshing && "opacity-70")}>
         <Card>
           <CardHeader>
             <CardTitle>Revenue by Country</CardTitle>
@@ -104,7 +109,7 @@ export default function AnalyticsPage() {
         </Card>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
+      <div className={cn("grid gap-6 transition-opacity xl:grid-cols-[0.8fr_1.2fr]", isRefreshing && "opacity-70")}>
         <Card>
           <CardHeader>
             <CardTitle>Payment Method Breakdown</CardTitle>

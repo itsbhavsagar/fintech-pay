@@ -10,6 +10,11 @@ import { SuccessRateGauge } from "@/components/dashboard/SuccessRateGauge";
 import { TransactionTable } from "@/components/dashboard/TransactionTable";
 import { TransactionDetail } from "@/components/transactions/TransactionDetail";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  SkeletonStatsCard,
+  SkeletonChart,
+  SkeletonTransactionTable,
+} from "@/components/ui/skeleton";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import {
   useTransactions,
@@ -32,31 +37,40 @@ export default function DashboardPage() {
     useState<TransactionDto | null>(null);
   const analytics = useAnalytics(period);
   const transactions = useTransactions(recentFilters);
+  const data = analytics.data;
+  const isInitialLoading = analytics.isLoading && !data;
+  const isRefreshing = analytics.isFetching && Boolean(data);
   const recentTransactions =
     transactions.data?.pages
       .flatMap((page) => page.transactions)
       .slice(0, 10) ?? [];
 
-  if (analytics.isLoading) {
+  if (isInitialLoading) {
     return (
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {Array.from({ length: 4 }, (_, index) => (
-            <Card key={index}>
-              <CardHeader>
-                <div className="h-4 w-28 rounded-md bg-secondary" />
-              </CardHeader>
-              <CardContent>
-                <div className="h-8 w-36 rounded-md bg-secondary" />
-              </CardContent>
-            </Card>
+            <SkeletonStatsCard key={index} />
           ))}
+        </div>
+        <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+          <Card>
+            <CardHeader>
+              <div className="h-5 w-48" />
+            </CardHeader>
+            <CardContent>
+              <SkeletonTransactionTable />
+            </CardContent>
+          </Card>
+          <SkeletonChart />
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <SkeletonChart />
+          <SkeletonChart />
         </div>
       </div>
     );
   }
-
-  const data = analytics.data;
 
   if (!data) {
     return (
@@ -98,6 +112,7 @@ export default function DashboardPage() {
       <RevenueChart
         data={data.dailyRevenue}
         period={period}
+        isFetching={isRefreshing}
         onPeriodChange={setPeriod}
       />
 
