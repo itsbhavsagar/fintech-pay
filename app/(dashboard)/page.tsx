@@ -2,11 +2,14 @@
 
 import { CreditCard, Link2, Percent, TrendingUp } from "lucide-react";
 import { useState } from "react";
-import { CountryMap } from "@/components/dashboard/CountryMap";
-import { CurrencyBreakdownChart } from "@/components/dashboard/CurrencyBreakdownChart";
-import { RevenueChart } from "@/components/dashboard/RevenueChart";
+import dynamic from "next/dynamic";
+
+const CountryMap = dynamic(() => import("@/components/dashboard/CountryMap").then((mod) => mod.CountryMap), { ssr: false, loading: () => <SkeletonChart /> });
+const CurrencyBreakdownChart = dynamic(() => import("@/components/dashboard/CurrencyBreakdownChart").then((mod) => mod.CurrencyBreakdownChart), { ssr: false, loading: () => <SkeletonChart /> });
+const RevenueChart = dynamic(() => import("@/components/dashboard/RevenueChart").then((mod) => mod.RevenueChart), { ssr: false, loading: () => <SkeletonChart /> });
+const SuccessRateGauge = dynamic(() => import("@/components/dashboard/SuccessRateGauge").then((mod) => mod.SuccessRateGauge), { ssr: false, loading: () => <SkeletonChart /> });
+
 import { StatsCard } from "@/components/dashboard/StatsCard";
-import { SuccessRateGauge } from "@/components/dashboard/SuccessRateGauge";
 import { TransactionTable } from "@/components/dashboard/TransactionTable";
 import { TransactionDetail } from "@/components/transactions/TransactionDetail";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

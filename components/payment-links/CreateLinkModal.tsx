@@ -76,6 +76,7 @@ export function CreateLinkModal() {
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
             <Input
+            placeholder="e.g. Monthly Subscription"
               id="title"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
@@ -86,6 +87,7 @@ export function CreateLinkModal() {
             <div className="space-y-2">
               <Label htmlFor="amount">Amount</Label>
               <Input
+              placeholder="e.g. 100.00"
                 id="amount"
                 type="number"
                 min="1"

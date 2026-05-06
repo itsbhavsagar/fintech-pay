@@ -188,6 +188,7 @@ import { useQuery } from "@tanstack/react-query";
 import { TransactionDetail } from "@/components/transactions/TransactionDetail";
 import { TransactionFilters } from "@/components/transactions/TransactionFilters";
 import { TransactionRow } from "@/components/transactions/TransactionRow";
+import { LoadMoreButton } from "@/components/shared/LoadMoreButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -313,27 +314,15 @@ export default function TransactionsPage() {
         </CardContent>
       </Card>
 
-      <div className="flex justify-center py-4">
-        {transactionsQuery.hasNextPage ? (
-          <Button
-            variant="outline"
-            onClick={() => void transactionsQuery.fetchNextPage()}
-            disabled={transactionsQuery.isFetchingNextPage}
-            className="min-w-[140px]"
-          >
-            {transactionsQuery.isFetchingNextPage ? (
-              <>
-                <Loader2 className="mr-2 size-4 animate-spin" />
-                Loading...
-              </>
-            ) : (
-              "Load More"
-            )}
-          </Button>
-        ) : transactions.length > 0 ? (
-          <p className="text-sm text-muted-foreground">No more transactions to show</p>
-        ) : null}
-      </div>
+      <LoadMoreButton
+        hasNextPage={transactionsQuery.hasNextPage}
+        isFetchingNextPage={transactionsQuery.isFetchingNextPage}
+        fetchNextPage={() => void transactionsQuery.fetchNextPage()}
+        itemName="transactions"
+        isInitialLoading={isInitialLoading}
+        isRefreshing={isRefreshing}
+        itemCount={transactions.length}
+      />
 
       <TransactionDetail
         transaction={selectedTransaction}

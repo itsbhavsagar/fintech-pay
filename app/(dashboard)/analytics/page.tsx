@@ -72,7 +72,7 @@ export default function AnalyticsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-semibold tracking-normal">Analytics Intelligence</h2>
+          <h1 className="text-xl font-semibold tracking-normal">Analytics Intelligence</h1>
           <p className="text-sm text-muted-foreground">Comprehensive behavioral insights across all transaction vectors.</p>
         </div>
         <div className="flex rounded-md border p-1 bg-card">

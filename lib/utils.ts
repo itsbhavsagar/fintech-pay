@@ -91,3 +91,10 @@ export function clamp(value: number, min: number, max: number): number {
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
+
+export function getPaginationParams(request: Request, defaultLimit = 10) {
+  const url = new URL(request.url);
+  const limit = clamp(Number(url.searchParams.get("limit") ?? defaultLimit.toString()), 1, 50);
+  const cursor = url.searchParams.get("cursor");
+  return { limit, cursor };
+}

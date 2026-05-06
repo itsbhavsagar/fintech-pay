@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import { jsonError, parseJsonBody } from "@/lib/api";
 import { requireSessionUser } from "@/lib/auth";
@@ -7,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 
 const updatePaymentLinkSchema = z.object({
   status: z.enum(["active", "expired"]),
+  expiresAt: z.string().datetime().nullable().optional(),
 });
 
 type RouteParams = {
@@ -45,8 +47,11 @@ export async function PATCH(
       where: { id },
       data: {
         status: input.status,
+        ...(input.expiresAt !== undefined && { expiresAt: input.expiresAt ? new Date(input.expiresAt) : null }),
       },
     });
+
+    revalidateTag(`dashboard-stats-${user.id}`);
 
     return NextResponse.json({
       paymentLink: toPaymentLinkDto(updated),

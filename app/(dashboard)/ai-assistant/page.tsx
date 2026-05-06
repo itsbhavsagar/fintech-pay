@@ -1,7 +1,7 @@
 "use client";
 
 import { FileText, Loader2, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AITypingIndicator } from "@/components/ai/AITypingIndicator";
 import { ChatBubble } from "@/components/ai/ChatBubble";
 import { ChatInput } from "@/components/ai/ChatInput";
@@ -23,6 +23,11 @@ export default function AiAssistantPage() {
   const [docs, setDocs] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<string | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isStreaming]);
 
   async function handleUpload() {
     if (!docs.trim()) {
@@ -49,7 +54,7 @@ export default function AiAssistantPage() {
             <Sparkles className="size-5" />
           </div>
           <div>
-            <h2 className="font-semibold tracking-normal">AI Assistant</h2>
+            <h1 className="font-semibold tracking-normal">AI Assistant</h1>
             <p className="text-sm text-muted-foreground">Payment analytics, grounded in your transaction data.</p>
           </div>
         </div>
@@ -77,6 +82,7 @@ export default function AiAssistantPage() {
               )
             )}
             {error ? <p className="text-sm text-destructive">{error}</p> : null}
+            <div ref={bottomRef} className="h-1" />
           </div>
         </ScrollArea>
         <ChatInput disabled={isStreaming} onSend={sendMessage} />

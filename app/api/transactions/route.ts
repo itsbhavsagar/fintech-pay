@@ -4,7 +4,7 @@ import { jsonError } from "@/lib/api";
 import { requireSessionUser } from "@/lib/auth";
 import { toTransactionDto } from "@/lib/mappers";
 import { prisma } from "@/lib/prisma";
-import { clamp } from "@/lib/utils";
+import { clamp, getPaginationParams } from "@/lib/utils";
 import type { TransactionStatus } from "@/types/domain";
 
 const statuses: readonly TransactionStatus[] = ["success", "failed", "pending"];
@@ -17,8 +17,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await requireSessionUser();
     const params = request.nextUrl.searchParams;
-    const limit = clamp(Number(params.get("limit") ?? "10"), 1, 50);
-    const cursor = params.get("cursor");
+    const { limit, cursor } = getPaginationParams(request, 10);
     const search = params.get("search")?.trim();
     const currency = params.get("currency")?.trim();
     const from = params.get("from");

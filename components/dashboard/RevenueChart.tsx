@@ -34,14 +34,14 @@ export function RevenueChart({
     <Card>
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <CardTitle>Revenue Intelligence</CardTitle>
-        <div className="flex rounded-md border p-1">
+        <div className="flex rounded-md border p-1 bg-card">
           {periods.map((item) => (
             <Button
               key={item}
-              variant={period === item ? "secondary" : "ghost"}
+              variant={period === item ? "default" : "ghost"}
               size="sm"
               onClick={() => onPeriodChange(item)}
-              className="h-7 px-3 text-xs"
+              className={`text-xs h-7 px-3 transition-colors ${period === item ? "shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
               disabled={isFetching}
             >
               {item}

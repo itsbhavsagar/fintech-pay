@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -15,7 +16,7 @@
   --secondary: #f8fafc;
   --secondary-foreground: #0f172a;
   --muted: #f8fafc;
-  --muted-foreground: #64748b;
+  --muted-foreground: #475569;
   --accent: #eef2ff;
   --accent-foreground: #3730a3;
   --destructive: #ef4444;
@@ -47,7 +48,7 @@
   --secondary: #1a1a1a;
   --secondary-foreground: #f1f5f9;
   --muted: #1a1a1a;
-  --muted-foreground: #94a3b8;
+  --muted-foreground: #cbd5e1;
   --accent: #242424;
   --accent-foreground: #f1f5f9;
   --destructive: #f87171;
@@ -99,6 +100,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-schibsted), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
 }
 
 * {
@@ -116,6 +119,10 @@ body {
   font-feature-settings:
     "rlig" 1,
     "calt" 1;
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+  font-family: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
 }
 
 button,
@@ -164,4 +171,13 @@ textarea {
     rgba(255, 255, 255, 0.05) 60%,
     transparent
   );
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 15s linear infinite;
 }

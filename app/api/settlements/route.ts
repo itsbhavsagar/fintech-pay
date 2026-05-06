@@ -1,16 +1,21 @@
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { jsonError } from "@/lib/api";
 import { requireSessionUser } from "@/lib/auth";
 import { toSettlementDto } from "@/lib/mappers";
 import { prisma } from "@/lib/prisma";
+import { getPaginationParams } from "@/lib/utils";
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const user = await requireSessionUser();
+    const { limit, cursor } = getPaginationParams(request, 10);
+
     const settlements = await prisma.settlement.findMany({
       where: {
         userId: user.id,
       },
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
       select: {
         id: true,
         amount: true,
@@ -23,18 +28,27 @@ export async function GET(): Promise<NextResponse> {
         createdAt: "desc",
       },
     });
-    const pendingPayout = settlements
-      .filter((settlement) => settlement.status === "pending" || settlement.status === "processing")
-      .reduce((sum, settlement) => sum + settlement.amount, 0);
+    const visibleSettlements = settlements.slice(0, limit);
+    const nextCursor = settlements.length > limit ? (visibleSettlements.at(-1)?.id ?? null) : null;
+
+    const pendingAgg = await prisma.settlement.aggregate({
+      where: {
+        userId: user.id,
+        status: { in: ["pending", "processing"] },
+      },
+      _sum: { amount: true },
+    });
+    const pendingPayout = pendingAgg._sum.amount ?? 0;
     const nextSettlementDate = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString();
 
     return NextResponse.json(
       {
-        settlements: settlements.map((s) => toSettlementDto(s as any)),
+        settlements: visibleSettlements.map((s) => toSettlementDto(s as any)),
         summary: {
           pendingPayout: Number(pendingPayout.toFixed(2)),
           nextSettlementDate,
         },
+        nextCursor,
       },
       {
         headers: {

@@ -9,6 +9,7 @@ import {
   Settings,
   Landmark,
   Zap,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -16,6 +17,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Logo } from "@/components/Logo";
 import { fetchJson } from "@/lib/fetcher";
 import { cn } from "@/lib/utils";
+import { useExchangeRates } from "@/hooks/useExchangeRates";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: Home },
@@ -31,6 +33,7 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const queryClient = useQueryClient();
+  const { data: ratesData, isLoading: isRatesLoading } = useExchangeRates();
 
   const prefetchRoute = (href: string) => {
     if (href === "/transactions") {
@@ -94,6 +97,81 @@ export function Sidebar() {
           );
         })}
       </nav>
+
+      <div className="mt-auto border-t bg-muted/10 p-4 space-y-4">
+        <div className="flex flex-col gap-1.5 px-1">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Live Rates (USD Base)</p>
+          <div className="text-xs bg-secondary/30 rounded-md py-2 px-2.5 border border-border/50">
+            {isRatesLoading ? (
+              <Loader2 className="size-3 animate-spin text-muted-foreground" />
+            ) : ratesData ? (
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-muted-foreground font-semibold">EUR</span>
+                  <span className="font-mono font-medium tracking-tight text-foreground">{ratesData.rates.EUR?.toFixed(2)}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-muted-foreground font-semibold">GBP</span>
+                  <span className="font-mono font-medium tracking-tight text-foreground">{ratesData.rates.GBP?.toFixed(2)}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[9px] text-muted-foreground font-semibold">INR</span>
+                  <span className="font-mono font-medium tracking-tight text-foreground">{ratesData.rates.INR?.toFixed(2)}</span>
+                </div>
+              </div>
+            ) : (
+              <span className="text-muted-foreground">Unavailable</span>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-xl border bg-card p-3 shadow-sm overflow-hidden relative">
+          <div className="absolute inset-y-0 left-0 w-8 bg-linear-to-r from-card to-transparent z-10" />
+          <div className="absolute inset-y-0 right-0 w-8 bg-linear-to-l from-card to-transparent z-10" />
+          
+          <p className="text-xs font-semibold text-foreground relative z-20">Accept Payments</p>
+          <p className="mt-0.5 text-[10px] text-muted-foreground leading-relaxed relative z-20">
+            Secure, fast, and reliable transactions.
+          </p>
+          
+          <div className="mt-3 overflow-hidden">
+            <div className="flex w-max animate-marquee gap-2">
+              {[1, 2].map((group) => (
+                <div key={group} className="flex gap-2 shrink-0">
+                  <div className="flex h-6 w-10 items-center justify-center rounded bg-white px-1 shadow-sm ring-1 ring-border/50 shrink-0">
+                    <img
+                      src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/visa.svg"
+                      alt="Visa"
+                      className="h-full w-full object-contain opacity-80"
+                    />
+                  </div>
+                  <div className="flex h-6 w-10 items-center justify-center rounded bg-white px-1 shadow-sm ring-1 ring-border/50 shrink-0">
+                    <img
+                      src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/mastercard.svg"
+                      alt="Mastercard"
+                      className="h-full w-full object-contain opacity-80"
+                    />
+                  </div>
+                  <div className="flex h-6 w-10 items-center justify-center rounded bg-white px-1 shadow-sm ring-1 ring-border/50 shrink-0">
+                    <img
+                      src="https://www.vectorlogo.zone/logos/upi/upi-ar21.svg"
+                      alt="UPI"
+                      className="h-full w-full object-contain opacity-80"
+                    />
+                  </div>
+                  <div className="flex h-6 w-10 items-center justify-center rounded bg-white px-1 shadow-sm ring-1 ring-border/50 shrink-0">
+                    <img
+                      src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/americanexpress.svg"
+                      alt="Amex"
+                      className="h-full w-full object-contain opacity-80"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </aside>
   );
 }

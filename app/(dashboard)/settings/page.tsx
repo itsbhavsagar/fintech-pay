@@ -7,30 +7,25 @@ import {
   Save,
   Send,
   UserRound,
+  Code
 } from "lucide-react";
-import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SettingsCard } from "@/components/settings/SettingsCard";
+import { SettingsAction } from "@/components/settings/SettingsAction";
 import { useUser } from "@/hooks/useUser";
 import { fetchJson } from "@/lib/fetcher";
 import { maskSecret } from "@/lib/utils";
-import type { ThemePreference, UserDto } from "@/types/domain";
+import type { UserDto } from "@/types/domain";
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
-  const { setTheme, theme } = useTheme();
   const { data: currentUser, isLoading: isUserLoading } = useUser();
   
   const [name, setName] = useState("");
@@ -118,7 +113,6 @@ export default function SettingsPage() {
   });
 
   const initials = (currentUser?.name ?? currentUser?.email ?? "?").slice(0, 1).toUpperCase();
-  const themeOptions: readonly ThemePreference[] = ["light", "dark", "system"];
 
   if (isUserLoading) {
     return (
@@ -130,175 +124,118 @@ export default function SettingsPage() {
 
   return (
     <TooltipProvider>
-      <div className="grid gap-5 xl:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserRound className="size-4" />
-              Profile
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              <Avatar className="size-16">
-                <AvatarImage src={image} alt={name} />
-                <AvatarFallback className="text-xl font-semibold">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium leading-none">{name || "Merchant"}</p>
-                <p className="text-xs text-muted-foreground">{currentUser?.email}</p>
+      <div className="grid gap-6 xl:grid-cols-2 max-w-5xl">
+        <SettingsCard title="Profile" icon={UserRound}>
+          <div className="flex items-center gap-4 pb-2">
+            <Avatar className="size-16 ring-1 ring-border/50">
+              <AvatarImage src={image} alt={name} className="object-cover" />
+              <AvatarFallback className="text-xl font-semibold bg-primary/10 text-primary">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 space-y-1">
+              <p className="text-sm font-semibold leading-none">{name || "Merchant"}</p>
+              <p className="text-xs text-muted-foreground">{currentUser?.email}</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className="bg-background"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="image">Avatar URL</Label>
+            <Input
+              id="image"
+              placeholder="https://example.com/avatar.jpg"
+              value={image}
+              onChange={(event) => setImage(event.target.value)}
+              className="bg-background"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="businessName">Business Name</Label>
+            <Input
+              id="businessName"
+              value={businessName}
+              onChange={(event) => setBusinessName(event.target.value)}
+              className="bg-background"
+            />
+          </div>
+          <div className="pt-2">
+            <SettingsAction
+              label="Save Profile"
+              tooltip="Save your profile changes"
+              icon={Save}
+              onClick={() => profileMutation.mutate()}
+              isPending={profileMutation.isPending}
+              disabled={!name || !businessName}
+            />
+          </div>
+        </SettingsCard>
+
+        <SettingsCard title="Developer Settings" icon={Code}>
+          <div className="space-y-6">
+            <div>
+              <div className="space-y-2">
+                <Label>Live Secret Key</Label>
+                <div className="rounded-lg border bg-background px-4 py-3 font-mono text-sm tracking-widest opacity-80 select-all">
+                  {currentUser ? maskSecret(currentUser.apiKey) : "Loading"}
+                </div>
+              </div>
+              <div className="pt-2">
+                <SettingsAction
+                  label="Regenerate Key"
+                  tooltip="Invalidates old key and generates a new one"
+                  icon={RotateCcw}
+                  onClick={() => apiKeyMutation.mutate()}
+                  isPending={apiKeyMutation.isPending}
+                  variant="outline"
+                />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="image">Avatar URL</Label>
-              <Input
-                id="image"
-                placeholder="paste your avatar URL"
-                value={image}
-                onChange={(event) => setImage(event.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="businessName">Business name</Label>
-              <Input
-                id="businessName"
-                value={businessName}
-                onChange={(event) => setBusinessName(event.target.value)}
-              />
-            </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={() => profileMutation.mutate()}
-                  disabled={profileMutation.isPending || !name || !businessName}
-                >
-                  {profileMutation.isPending ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <Save className="size-4" />
-                  )}
-                  Save Profile
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Save your profile changes</TooltipContent>
-            </Tooltip>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <KeyRound className="size-4" />
-              API Keys
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg border bg-secondary p-4 font-mono text-sm">
-              {currentUser ? maskSecret(currentUser.apiKey) : "Loading"}
-            </div>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
+            <div className="h-px bg-border/50" />
+
+            <div>
+              <div className="space-y-2">
+                <Label htmlFor="webhookUrl">Webhook URL</Label>
+                <Input
+                  id="webhookUrl"
+                  type="url"
+                  value={webhookUrl}
+                  onChange={(event) => setWebhookUrl(event.target.value)}
+                  placeholder="https://example.com/webhooks/paysense"
+                  className="bg-background"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Receive real-time event payloads when payment links are fulfilled.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3 pt-2">
+                <SettingsAction
+                  label="Save Webhook"
+                  tooltip="Save your webhook endpoint"
+                  icon={Save}
+                  onClick={() => webhookMutation.mutate()}
+                  isPending={webhookMutation.isPending}
+                />
+                <SettingsAction
+                  label="Test Webhook"
+                  tooltip="Send a test ping event"
+                  icon={Send}
+                  onClick={() => testWebhookMutation.mutate()}
+                  isPending={testWebhookMutation.isPending}
                   variant="outline"
-                  onClick={() => apiKeyMutation.mutate()}
-                  disabled={apiKeyMutation.isPending}
-                >
-                  {apiKeyMutation.isPending ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <RotateCcw className="size-4" />
-                  )}
-                  Regenerate
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Regenerate your API key</TooltipContent>
-            </Tooltip>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Webhook</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="webhookUrl">Webhook URL</Label>
-              <Input
-                id="webhookUrl"
-                type="url"
-                value={webhookUrl}
-                onChange={(event) => setWebhookUrl(event.target.value)}
-                placeholder="https://example.com/webhooks/paysense"
-              />
+                />
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={() => webhookMutation.mutate()}
-                    disabled={webhookMutation.isPending}
-                  >
-                    {webhookMutation.isPending ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      <Save className="size-4" />
-                    )}
-                    Save Webhook
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Save your webhook endpoint</TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    onClick={() => testWebhookMutation.mutate()}
-                    disabled={testWebhookMutation.isPending}
-                  >
-                    {testWebhookMutation.isPending ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      <Send className="size-4" />
-                    )}
-                    Test Webhook
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Send a test event to your webhook</TooltipContent>
-              </Tooltip>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Theme</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-           <div className="flex rounded-md border p-1 bg-muted/50">
-  {themeOptions.map((option) => (
-    <Button
-      key={option}
-      variant={theme === option ? "default" : "ghost"}
-      className="flex-1 transition-all"
-      onClick={() => setTheme(option)}
-    >
-      {option.charAt(0).toUpperCase() + option.slice(1)}
-    </Button>
-  ))}
-</div>
-          </CardContent>
-        </Card>
+          </div>
+        </SettingsCard>
       </div>
     </TooltipProvider>
   );

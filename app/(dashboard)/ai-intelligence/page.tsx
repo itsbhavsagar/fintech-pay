@@ -163,7 +163,7 @@ export default function AIIntelligencePage() {
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold tracking-tight">Payment Intelligence</h2>
+            <h1 className="text-2xl font-bold tracking-tight">Payment Intelligence</h1>
             <Sparkles className="size-5 text-primary animate-pulse" />
           </div>
           <p className="text-sm text-muted-foreground">
