@@ -4,7 +4,7 @@ import { jsonError } from "@/lib/api";
 import { requireSessionUser } from "@/lib/auth";
 import { toTransactionDto } from "@/lib/mappers";
 import { prisma } from "@/lib/prisma";
-import { clamp, getPaginationParams } from "@/lib/utils";
+import { getPaginationParams } from "@/lib/utils";
 import type { TransactionStatus } from "@/types/domain";
 
 const statuses: readonly TransactionStatus[] = ["success", "failed", "pending"];

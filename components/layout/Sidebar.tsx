@@ -13,9 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
 import { Logo } from "@/components/Logo";
-import { fetchJson } from "@/lib/fetcher";
 import { cn } from "@/lib/utils";
 import { useExchangeRates } from "@/hooks/useExchangeRates";
 
@@ -32,37 +30,7 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const queryClient = useQueryClient();
   const { data: ratesData, isLoading: isRatesLoading } = useExchangeRates();
-
-  const prefetchRoute = (href: string) => {
-    if (href === "/transactions") {
-      queryClient.prefetchInfiniteQuery({
-        queryKey: ["transactions", "", "all", "all", "", ""],
-        queryFn: () => fetchJson("/api/transactions?limit=10"),
-        initialPageParam: null as string | null,
-        staleTime: 120000,
-      });
-    } else if (href === "/analytics") {
-      queryClient.prefetchQuery({
-        queryKey: ["analytics", "30d"],
-        queryFn: () => fetchJson(`/api/analytics?period=30d`),
-        staleTime: 300000,
-      });
-    } else if (href === "/payment-links") {
-      queryClient.prefetchQuery({
-        queryKey: ["payment-links"],
-        queryFn: () => fetchJson(`/api/payment-links`),
-        staleTime: 120000,
-      });
-    } else if (href === "/ai-intelligence") {
-      queryClient.prefetchQuery({
-        queryKey: ["intelligence"],
-        queryFn: () => fetchJson(`/api/intelligence`),
-        staleTime: 120000,
-      });
-    }
-  };
 
   return (
     <aside className="hidden h-screen w-64 shrink-0 border-r bg-card lg:sticky lg:top-0 lg:flex lg:flex-col">
@@ -84,8 +52,6 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              onMouseEnter={() => prefetchRoute(item.href)}
-              onClick={() => prefetchRoute(item.href)}
               className={cn(
                 "flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground",
                 isActive && "bg-accent text-accent-foreground font-semibold"
@@ -129,9 +95,9 @@ export function Sidebar() {
           <div className="absolute inset-y-0 left-0 w-8 bg-linear-to-r from-card to-transparent z-10" />
           <div className="absolute inset-y-0 right-0 w-8 bg-linear-to-l from-card to-transparent z-10" />
           
-          <p className="text-xs font-semibold text-foreground relative z-20">Accept Payments</p>
+          <p className="text-xs font-semibold text-foreground relative z-20"> Accepted Payments </p>
           <p className="mt-0.5 text-[10px] text-muted-foreground leading-relaxed relative z-20">
-            Secure, fast, and reliable transactions.
+            Largest Selection Of Payment Methods.
           </p>
           
           <div className="mt-3 overflow-hidden">

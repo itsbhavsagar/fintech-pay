@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, CheckCircle2, AlertCircle, Info, X } from "lucide-react";
+import { Bell, AlertCircle, Info } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -94,7 +94,7 @@ export function Notifications() {
               </div>
               <p className="mt-4 text-sm font-medium">No notifications yet</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                We'll notify you when something important happens.
+                We&apos;ll notify you when something important happens.
               </p>
             </div>
           ) : (

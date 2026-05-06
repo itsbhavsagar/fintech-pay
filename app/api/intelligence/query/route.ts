@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireSessionUser } from "@/lib/auth";
 import { jsonError, parseJsonBody } from "@/lib/api";
@@ -17,9 +16,6 @@ function startOfUtcDay(date: Date): Date {
   );
 }
 
-function dayKey(date: Date): string {
-  return startOfUtcDay(date).toISOString().slice(0, 10);
-}
 
 function addDays(date: Date, days: number): Date {
   const dayInMs = 24 * 60 * 60 * 1000;

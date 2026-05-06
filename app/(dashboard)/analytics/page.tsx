@@ -21,7 +21,7 @@ import { SkeletonChart } from "@/components/ui/skeleton";
 import { FloatingAIAssistant } from "@/components/shared/FloatingAIAssistant";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { formatCompactNumber } from "@/lib/utils";
-import type { Period, BreakdownPoint } from "@/types/domain";
+import type { Period } from "@/types/domain";
 
 const periods: readonly Period[] = ["7d", "30d", "90d"];
 const chartColors = [

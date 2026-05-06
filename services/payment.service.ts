@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { checkIdempotency, storeIdempotency } from "@/lib/idempotency";
+import { checkIdempotency } from "@/lib/idempotency";
 
 type PaymentStateTransition =
   | "created"

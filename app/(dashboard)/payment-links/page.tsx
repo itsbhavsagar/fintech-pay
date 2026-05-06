@@ -76,12 +76,6 @@ export default function PaymentLinksPage() {
     [paymentLinks.data]
   );
 
-  async function copyLink(url: string | null) {
-    if (url) {
-      await navigator.clipboard.writeText(url);
-      toast.success("Link copied to clipboard");
-    }
-  }
 
   return (
     <div className="space-y-6 pb-20">

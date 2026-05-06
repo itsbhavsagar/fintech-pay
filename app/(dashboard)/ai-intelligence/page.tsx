@@ -4,10 +4,9 @@ import {
   AlertCircle,
   Info,
   Loader2,
-  Send,
+  Sparkles,
   Star,
   TrendingUp,
-  Sparkles,
 } from "lucide-react";
 import { useState } from "react";
 import {

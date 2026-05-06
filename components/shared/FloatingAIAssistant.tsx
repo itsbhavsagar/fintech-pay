@@ -5,8 +5,6 @@ import { Send, Sparkles, X, Loader2, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-
 export function FloatingAIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -222,7 +220,7 @@ export function FloatingAIAssistant() {
             <div className="text-center space-y-2">
               <Sparkles className="size-8 mx-auto text-primary/50" />
               <p className="text-sm font-medium">How can I help with your analytics today?</p>
-              <p className="text-xs opacity-70">Try: "Why did success rate drop?"</p>
+              <p className="text-xs opacity-70">Try: &quot;Why did success rate drop?&quot;</p>
             </div>
           ) : (
             <>

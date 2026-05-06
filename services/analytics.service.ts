@@ -1,4 +1,3 @@
-import type { Transaction } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 const dayInMs = 24 * 60 * 60 * 1000;

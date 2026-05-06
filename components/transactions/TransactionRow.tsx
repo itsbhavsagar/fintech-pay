@@ -17,58 +17,6 @@ export function TransactionRow({ transaction, onSelect }: TransactionRowProps) {
   const queryClient = useQueryClient();
   const retry = useRetryTransaction();
 
-  const retryMutation = useMutation({
-    mutationFn: async () => {
-      await new Promise((res) => setTimeout(res, 1200));
-      return Math.random() > 0.4 ? "success" : "failed";
-    },
-
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ["transactions"] });
-
-      const prev = queryClient.getQueryData(["transactions"]);
-
-      queryClient.setQueriesData<any>({ queryKey: ["transactions"] }, (data: any) => {
-        if (!data) return data;
-
-        return {
-          ...data,
-          pages: data.pages.map((page: any) => ({
-            ...page,
-            transactions: page.transactions.map((t: any) =>
-              t.id === transaction.id
-                ? { ...t, status: "pending", paymentState: "retrying" }
-                : t,
-            ),
-          })),
-        };
-      });
-
-      return { prev };
-    },
-
-    onSuccess: (result) => {
-      queryClient.setQueriesData<any>({ queryKey: ["transactions"] }, (data: any) => {
-        if (!data) return data;
-
-        return {
-          ...data,
-          pages: data.pages.map((page: any) => ({
-            ...page,
-            transactions: page.transactions.map((t: any) =>
-              t.id === transaction.id
-                ? {
-                    ...t,
-                    status: result,
-                    paymentState: result === "success" ? "captured" : "failed",
-                  }
-                : t,
-            ),
-          })),
-        };
-      });
-    },
-  });
 
   return (
     <TableRow className="cursor-pointer" onClick={() => onSelect(transaction)}>
