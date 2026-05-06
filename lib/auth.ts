@@ -109,6 +109,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       id: true,
       email: true,
       name: true,
+      image: true,
       businessName: true,
       apiKey: true,
       webhookUrl: true,

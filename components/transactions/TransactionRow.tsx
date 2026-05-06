@@ -28,7 +28,7 @@ export function TransactionRow({ transaction, onSelect }: TransactionRowProps) {
 
       const prev = queryClient.getQueryData(["transactions"]);
 
-      queryClient.setQueriesData<any>(["transactions"], (data) => {
+      queryClient.setQueriesData<any>({ queryKey: ["transactions"] }, (data: any) => {
         if (!data) return data;
 
         return {
@@ -48,7 +48,7 @@ export function TransactionRow({ transaction, onSelect }: TransactionRowProps) {
     },
 
     onSuccess: (result) => {
-      queryClient.setQueriesData<any>(["transactions"], (data) => {
+      queryClient.setQueriesData<any>({ queryKey: ["transactions"] }, (data: any) => {
         if (!data) return data;
 
         return {

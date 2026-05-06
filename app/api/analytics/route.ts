@@ -10,10 +10,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const period = parsePeriod(request.nextUrl.searchParams.get("period"));
     const [analytics, stats] = await Promise.all([getAnalytics(user.id, period), getDashboardStats(user.id)]);
 
-    return NextResponse.json({
-      ...analytics,
-      stats,
-    });
+    return NextResponse.json(
+      {
+        ...analytics,
+        stats,
+      },
+      {
+        headers: {
+          "Cache-Control": "private, max-age=60, stale-while-revalidate=300",
+        },
+      }
+    );
   } catch (error: unknown) {
     return jsonError(error);
   }

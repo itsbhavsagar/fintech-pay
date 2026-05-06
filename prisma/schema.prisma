@@ -12,6 +12,7 @@ model User {
   email        String        @unique
   name         String?
   password     String
+  image        String?
   businessName String?
   apiKey       String        @unique @default(cuid())
   webhookUrl   String?
@@ -24,24 +25,27 @@ model User {
 }
 
 model Transaction {
-  id               String   @id @default(cuid())
-  userId           String
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount           Float
-  currency         String
-  status           String
-  paymentState     String   @default("created") // created | authorized | captured | failed | retrying
-  country          String
-  paymentMethod    String
-  razorpayId       String?  @unique
-  idempotencyKey   String?  @unique
-  retryCount       Int      @default(0)   
-  lastRetryAt      DateTime?              
-  description      String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount         Float
+  currency       String
+  status         String
+  paymentState   String    @default("created") // created | authorized | captured | failed | retrying
+  country        String
+  paymentMethod  String
+  razorpayId     String?   @unique
+  idempotencyKey String?   @unique
+  retryCount     Int       @default(0)
+  lastRetryAt    DateTime?
+  description    String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([userId, createdAt])
+  @@index([userId, status, createdAt])
+  @@index([userId, currency, createdAt])
+  @@index([userId, paymentMethod, createdAt])
   @@index([idempotencyKey])
 }
 
@@ -59,6 +63,7 @@ model PaymentLink {
   createdAt      DateTime  @default(now())
 
   @@index([userId, createdAt])
+  @@index([userId, status])
 }
 
 model Settlement {

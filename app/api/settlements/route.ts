@@ -11,6 +11,14 @@ export async function GET(): Promise<NextResponse> {
       where: {
         userId: user.id,
       },
+      select: {
+        id: true,
+        amount: true,
+        currency: true,
+        status: true,
+        settledAt: true,
+        createdAt: true,
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -20,13 +28,20 @@ export async function GET(): Promise<NextResponse> {
       .reduce((sum, settlement) => sum + settlement.amount, 0);
     const nextSettlementDate = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString();
 
-    return NextResponse.json({
-      settlements: settlements.map(toSettlementDto),
-      summary: {
-        pendingPayout: Number(pendingPayout.toFixed(2)),
-        nextSettlementDate,
+    return NextResponse.json(
+      {
+        settlements: settlements.map((s) => toSettlementDto(s as any)),
+        summary: {
+          pendingPayout: Number(pendingPayout.toFixed(2)),
+          nextSettlementDate,
+        },
       },
-    });
+      {
+        headers: {
+          "Cache-Control": "private, max-age=60, stale-while-revalidate=300",
+        },
+      }
+    );
   } catch (error: unknown) {
     return jsonError(error);
   }

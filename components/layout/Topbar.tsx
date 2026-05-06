@@ -1,18 +1,27 @@
 "use client";
 
-import { LogOut, Menu, WalletCards } from "lucide-react";
+import { Laptop, LogOut, Menu, Moon, Sun, WalletCards } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Notifications } from "@/components/layout/Notifications";
+import { useUser } from "@/hooks/useUser";
 import type { UserDto } from "@/types/domain";
 
 type TopbarProps = {
@@ -36,23 +45,32 @@ function getPageTitle(pathname: string): string {
   return match?.label ?? "Dashboard";
 }
 
-export function Topbar({ user }: TopbarProps) {
+export function Topbar({ user: initialUser }: TopbarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { setTheme } = useTheme();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { data: user } = useUser(initialUser);
+
+  const currentUser = user ?? initialUser;
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
       await fetch("/api/auth/logout", { method: "POST" });
+      toast.success("Logged out successfully");
       router.push("/login");
+    } catch {
+      toast.error("Logout failed");
     } finally {
       setIsLoggingOut(false);
     }
   };
 
+  const initials = (currentUser.name ?? currentUser.email).slice(0, 1).toUpperCase();
+
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/75 lg:px-6">
+    <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/75 lg:px-6">
       <div className="flex items-center gap-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -81,53 +99,74 @@ export function Topbar({ user }: TopbarProps) {
             {getPageTitle(pathname)}
           </h1>
           <p className="hidden text-xs text-muted-foreground sm:block">
-            {user.businessName ?? user.email}
+            {currentUser.businessName ?? currentUser.email}
           </p>
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <ThemeToggle />
+        <Notifications />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-2 hidden sm:flex">
-              <div className="flex size-9 items-center justify-center rounded-md bg-secondary text-sm font-semibold">
-                {(user.name ?? user.email).slice(0, 1).toUpperCase()}
-              </div>
+            <Button variant="ghost" className="gap-2 hidden sm:flex cursor-pointer px-2 focus-visible:ring-0 focus-visible:ring-offset-0">
+              <Avatar className="size-9 rounded-md">
+                <AvatarImage src={currentUser.image ?? undefined} alt={currentUser.name ?? ""} />
+                <AvatarFallback className="rounded-md bg-secondary text-sm font-semibold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
               <div className="text-right">
                 <p className="text-sm font-medium leading-none">
-                  {user.name ?? "Merchant"}
+                  {currentUser.name ?? "Merchant"}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {user.email}
+                  {currentUser.email}
                 </p>
               </div>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem disabled className="flex-col items-start py-2">
-              <p className="text-sm font-medium">{user.name ?? "Merchant"}</p>
-              <p className="text-xs text-muted-foreground">{user.email}</p>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/settings">Settings</Link>
+              <Link href="/settings" className="cursor-pointer">Settings</Link>
             </DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>Theme</DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent className="mr-2">
+                  <DropdownMenuItem onClick={() => setTheme("light")}>
+                    <Sun className="mr-2 size-4" />
+                    <span>Light</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("dark")}>
+                    <Moon className="mr-2 size-4" />
+                    <span>Dark</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("system")}>
+                    <Laptop className="mr-2 size-4" />
+                    <span>System</span>
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className="text-destructive"
+              className="text-destructive cursor-pointer"
             >
               <LogOut className="mr-2 size-4" />
               {isLoggingOut ? "Logging out..." : "Logout"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        {/* Mobile avatar only */}
-        <div className="flex size-9 items-center justify-center rounded-md bg-secondary text-sm font-semibold sm:hidden">
-          {(user.name ?? user.email).slice(0, 1).toUpperCase()}
-        </div>
+
+        <Avatar className="size-9 rounded-md sm:hidden">
+          <AvatarImage src={currentUser.image ?? undefined} alt={currentUser.name ?? ""} />
+          <AvatarFallback className="rounded-md bg-secondary text-sm font-semibold">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
       </div>
     </header>
   );
 }
+

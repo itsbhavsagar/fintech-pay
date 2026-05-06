@@ -16,12 +16,10 @@ import {
   SkeletonTransactionTable,
 } from "@/components/ui/skeleton";
 import { useAnalytics } from "@/hooks/useAnalytics";
-import {
-  useTransactions,
-  type TransactionFilters,
-} from "@/hooks/useTransactions";
+import { useTransactions, type TransactionFilters } from "@/hooks/useTransactions";
 import { formatCompactNumber, formatPercent } from "@/lib/utils";
 import type { Period, TransactionDto } from "@/types/domain";
+import Link from "next/link";
 
 const recentFilters: TransactionFilters = {
   search: "",
@@ -118,8 +116,14 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle>Recent Transactions</CardTitle>
+            <Link
+              href="/transactions"
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              View all
+            </Link>
           </CardHeader>
           <CardContent>
             <TransactionTable

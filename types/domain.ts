@@ -14,6 +14,7 @@ export type UserDto = {
   id: string;
   email: string;
   name: string | null;
+  image: string | null;
   businessName: string | null;
   apiKey: string;
   webhookUrl: string | null;

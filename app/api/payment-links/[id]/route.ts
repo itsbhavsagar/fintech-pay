@@ -10,9 +10,9 @@ const updatePaymentLinkSchema = z.object({
 });
 
 type RouteParams = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export async function PATCH(
@@ -20,12 +20,13 @@ export async function PATCH(
   { params }: RouteParams,
 ): Promise<NextResponse> {
   try {
+    const { id } = await params;
     const user = await requireSessionUser();
     const input = await parseJsonBody(request, updatePaymentLinkSchema);
 
-    // Verify link ownership
+ 
     const link = await prisma.paymentLink.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!link) {
@@ -39,9 +40,9 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    // Update status
+
     const updated = await prisma.paymentLink.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         status: input.status,
       },

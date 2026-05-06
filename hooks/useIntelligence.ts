@@ -37,6 +37,8 @@ export function useIntelligence() {
     queryKey: ["intelligence"],
     queryFn: () => fetchJson<IntelligenceResponse>("/api/intelligence"),
     placeholderData: keepPreviousData,
+    staleTime: 5 * 60 * 1000, 
+    refetchOnWindowFocus: false,
   });
 }
 

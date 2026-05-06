@@ -32,30 +32,31 @@ export function Sidebar() {
   const pathname = usePathname();
   const queryClient = useQueryClient();
 
-  const handlePrefetch = (href: string) => {
-    // Prefetch data based on the route
-    if (href === "/" || href === "/analytics") {
+  const prefetchRoute = (href: string) => {
+    if (href === "/transactions") {
+      queryClient.prefetchInfiniteQuery({
+        queryKey: ["transactions", "", "all", "all", "", ""],
+        queryFn: () => fetchJson("/api/transactions?limit=10"),
+        initialPageParam: null as string | null,
+        staleTime: 120000,
+      });
+    } else if (href === "/analytics") {
       queryClient.prefetchQuery({
         queryKey: ["analytics", "30d"],
         queryFn: () => fetchJson(`/api/analytics?period=30d`),
-      });
-    } else if (href === "/transactions") {
-      queryClient.prefetchQuery({
-        queryKey: [
-          "transactions",
-          { search: "", status: "all", currency: "all", from: "", to: "" },
-        ],
-        queryFn: () => fetchJson(`/api/transactions?limit=10`),
+        staleTime: 300000,
       });
     } else if (href === "/payment-links") {
       queryClient.prefetchQuery({
         queryKey: ["payment-links"],
         queryFn: () => fetchJson(`/api/payment-links`),
+        staleTime: 120000,
       });
     } else if (href === "/ai-intelligence") {
       queryClient.prefetchQuery({
         queryKey: ["intelligence"],
         queryFn: () => fetchJson(`/api/intelligence`),
+        staleTime: 120000,
       });
     }
   };
@@ -66,27 +67,25 @@ export function Sidebar() {
         <Logo />
         <div>
           <p className="text-sm font-semibold leading-none">PaySense</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Merchant payments
-          </p>
+          <p className="mt-1 text-xs text-muted-foreground">Merchant payments</p>
         </div>
       </div>
+
       <nav className="flex-1 space-y-1 p-3">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
+          const isActive =
+            item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
 
           return (
             <Link
               key={item.href}
               href={item.href}
-              onMouseEnter={() => handlePrefetch(item.href)}
+              onMouseEnter={() => prefetchRoute(item.href)}
+              onClick={() => prefetchRoute(item.href)}
               className={cn(
-                "flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
-                active && "bg-accent text-accent-foreground",
+                "flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground",
+                isActive && "bg-accent text-accent-foreground font-semibold"
               )}
             >
               <Icon className="size-4" />

@@ -1,382 +1,3 @@
-// "use client";
-
-// import {
-//   AlertCircle,
-//   Info,
-//   Loader2,
-//   Send,
-//   Star,
-//   TrendingUp,
-// } from "lucide-react";
-// import { useState } from "react";
-// import {
-//   Area,
-//   AreaChart,
-//   CartesianGrid,
-//   Line,
-//   LineChart,
-//   ResponsiveContainer,
-//   Tooltip,
-//   XAxis,
-//   YAxis,
-// } from "recharts";
-// import { Badge } from "@/components/ui/badge";
-// import { Button } from "@/components/ui/button";
-// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import { Input } from "@/components/ui/input";
-// import { ScrollArea } from "@/components/ui/scroll-area";
-// import { Separator } from "@/components/ui/separator";
-// import {
-//   useIntelligence,
-//   useIntelligenceQuery,
-//   type Anomaly,
-//   type Insight,
-// } from "@/hooks/useIntelligence";
-// import { formatCompactNumber } from "@/lib/utils";
-
-// function AnomalySeverityBadge({ severity }: { severity: string }) {
-//   const colors: Record<string, string> = {
-//     critical: "bg-red-500/10 text-red-700 border-red-200",
-//     warning: "bg-yellow-500/10 text-yellow-700 border-yellow-200",
-//     info: "bg-blue-500/10 text-blue-700 border-blue-200",
-//   };
-
-//   return (
-//     <Badge variant="outline" className={colors[severity]}>
-//       {severity.charAt(0).toUpperCase() + severity.slice(1)}
-//     </Badge>
-//   );
-// }
-
-// function AnomalyIcon({ type }: { type: string }) {
-//   if (type === "success_rate" || type === "failure_rate") {
-//     return <AlertCircle className="size-4 text-red-500" />;
-//   }
-//   if (type === "volume_spike") {
-//     return <TrendingUp className="size-4 text-blue-500" />;
-//   }
-//   return <Info className="size-4 text-gray-500" />;
-// }
-
-// function InsightIcon({ icon }: { icon: string }) {
-//   if (icon === "star") {
-//     return <Star className="size-5 text-yellow-500" />;
-//   }
-//   if (icon === "trending") {
-//     return <TrendingUp className="size-5 text-green-500" />;
-//   }
-//   return <AlertCircle className="size-5 text-orange-500" />;
-// }
-
-// export default function AIIntelligencePage() {
-//   const intelligence = useIntelligence();
-//   const [query, setQuery] = useState("");
-//   const [submittedQuery, setSubmittedQuery] = useState("");
-//   const [streamingResponse, setStreamingResponse] = useState("");
-//   const [isStreaming, setIsStreaming] = useState(false);
-//   const data = intelligence.data;
-//   const isInitialLoading = intelligence.isLoading && !data;
-//   const isRefreshing = intelligence.isFetching && Boolean(data);
-
-//   const handleQuerySubmit = async () => {
-//     if (!query.trim()) return;
-
-//     setSubmittedQuery(query);
-//     setStreamingResponse("");
-//     setIsStreaming(true);
-
-//     try {
-//       const response = await fetch("/api/intelligence/query", {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ query }),
-//       });
-
-//       if (!response.ok) {
-//         throw new Error("Failed to fetch response");
-//       }
-
-//       const reader = response.body?.getReader();
-//       if (!reader) throw new Error("No response body");
-
-//       const decoder = new TextDecoder();
-//       let result = "";
-
-//       while (true) {
-//         const { done, value } = await reader.read();
-//         if (done) break;
-
-//         const chunk = decoder.decode(value);
-//         const lines = chunk.split("\n");
-
-//         for (const line of lines) {
-//           if (line.startsWith("data: ")) {
-//             const data = JSON.parse(line.slice(6)) as {
-//               token?: string;
-//               done?: boolean;
-//               error?: string;
-//             };
-
-//             if (data.error) {
-//               throw new Error(data.error);
-//             }
-
-//             if (data.token) {
-//               result += data.token;
-//               setStreamingResponse(result);
-//             }
-
-//             if (data.done) {
-//               setIsStreaming(false);
-//             }
-//           }
-//         }
-//       }
-//     } catch (error) {
-//       const message =
-//         error instanceof Error ? error.message : "Failed to get response";
-//       setStreamingResponse(
-//         `Error: ${message}. Please try again with a different question.`,
-//       );
-//       setIsStreaming(false);
-//     }
-
-//     setQuery("");
-//   };
-
-//   if (isInitialLoading) {
-//     return (
-//       <div className="space-y-6">
-//         <div className="space-y-2">
-//           <h2 className="text-2xl font-semibold">Payment Intelligence</h2>
-//           <p className="text-sm text-muted-foreground">
-//             Loading AI-generated insights...
-//           </p>
-//         </div>
-//         <Card>
-//           <CardContent className="flex items-center justify-center py-16">
-//             <div className="flex items-center gap-2 text-muted-foreground">
-//               <Loader2 className="size-5 animate-spin" />
-//               <span>Analyzing your transactions...</span>
-//             </div>
-//           </CardContent>
-//         </Card>
-//       </div>
-//     );
-//   }
-
-//   if (!data) {
-//     return (
-//       <Card>
-//         <CardContent className="py-8 text-center text-sm text-muted-foreground">
-//           Unable to load intelligence data. Please try again later.
-//         </CardContent>
-//       </Card>
-//     );
-//   }
-
-//   return (
-//     <div className="space-y-6">
-//       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-//         <div className="space-y-2">
-//           <h2 className="text-2xl font-semibold">Payment Intelligence</h2>
-//           <p className="text-sm text-muted-foreground">
-//             AI-generated insights from your transaction data
-//           </p>
-//         </div>
-//         {isRefreshing ? (
-//           <Loader2
-//             aria-label="Refreshing intelligence"
-//             className="size-4 animate-spin text-muted-foreground"
-//           />
-//         ) : null}
-//       </div>
-
-//       {/* Anomalies Section */}
-//       {data.anomalies.length > 0 && (
-//         <Card>
-//           <CardHeader>
-//             <CardTitle>Anomalies Detected</CardTitle>
-//           </CardHeader>
-//           <CardContent>
-//             <div className="space-y-3">
-//               {data.anomalies.map((anomaly: Anomaly, index: number) => (
-//                 <div
-//                   key={index}
-//                   className="flex items-start gap-3 rounded-lg border p-3"
-//                 >
-//                   <AnomalyIcon type={anomaly.type} />
-//                   <div className="flex-1 min-w-0">
-//                     <p className="text-sm font-medium leading-relaxed">
-//                       {anomaly.description}
-//                     </p>
-//                   </div>
-//                   <AnomalySeverityBadge severity={anomaly.severity} />
-//                 </div>
-//               ))}
-//             </div>
-//           </CardContent>
-//         </Card>
-//       )}
-
-//       {/* Revenue Forecast Section */}
-//       <Card>
-//         <CardHeader>
-//           <div className="flex items-center justify-between">
-//             <CardTitle>7-Day Revenue Forecast</CardTitle>
-//             <div className="text-right">
-//               <p className="text-sm text-muted-foreground">Predicted total</p>
-//               <p className="text-lg font-semibold">
-//                 ₹{formatCompactNumber(data.forecastTotal)}
-//               </p>
-//             </div>
-//           </div>
-//         </CardHeader>
-//         <CardContent>
-//           <div className="h-80">
-//             <ResponsiveContainer width="100%" height="100%">
-//               <LineChart data={data.forecast}>
-//                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-//                 <XAxis
-//                   dataKey="date"
-//                   tickLine={false}
-//                   axisLine={false}
-//                   tick={{ fontSize: 12 }}
-//                 />
-//                 <YAxis
-//                   tickLine={false}
-//                   axisLine={false}
-//                   tickFormatter={(value) =>
-//                     "₹" + formatCompactNumber(Number(value))
-//                   }
-//                 />
-//                 <Tooltip
-//                   formatter={(value) => [
-//                     "₹" + formatCompactNumber(Number(value)),
-//                     "Revenue",
-//                   ]}
-//                   contentStyle={{
-//                     backgroundColor: "var(--background)",
-//                     border: "1px solid var(--border)",
-//                     borderRadius: "6px",
-//                   }}
-//                 />
-//                 <Line
-//                   type="monotone"
-//                   dataKey="revenue"
-//                   stroke="var(--chart-1)"
-//                   strokeWidth={2}
-//                   dot={false}
-//                   isAnimationActive={false}
-//                 />
-//                 <Line
-//                   type="monotone"
-//                   dataKey="revenue"
-//                   stroke="var(--border)"
-//                   strokeWidth={2}
-//                   strokeDasharray="5 5"
-//                   dot={false}
-//                   isAnimationActive={false}
-//                   data={data.forecast.filter((d) => d.isForecast)}
-//                 />
-//               </LineChart>
-//             </ResponsiveContainer>
-//           </div>
-//           <div className="mt-4 flex gap-4 text-xs text-muted-foreground">
-//             <div className="flex items-center gap-2">
-//               <div className="size-2 rounded-full bg-chart-1" />
-//               <span>Actual</span>
-//             </div>
-//             <div className="flex items-center gap-2">
-//               <div className="size-2 rounded-full border-2 border-border" />
-//               <span>Forecast</span>
-//             </div>
-//           </div>
-//         </CardContent>
-//       </Card>
-
-//       {/* Top Insights Section */}
-//       <div className="grid gap-4 md:grid-cols-3">
-//         {data.insights.map((insight: Insight, index: number) => (
-//           <Card key={index}>
-//             <CardHeader className="pb-3">
-//               <div className="flex items-start justify-between">
-//                 <CardTitle className="text-sm font-medium">
-//                   {insight.title}
-//                 </CardTitle>
-//                 <InsightIcon icon={insight.icon} />
-//               </div>
-//             </CardHeader>
-//             <CardContent>
-//               <div className="space-y-1">
-//                 <p className="text-2xl font-bold">{insight.value}</p>
-//                 <p className="text-xs text-muted-foreground">
-//                   {insight.description}
-//                 </p>
-//               </div>
-//             </CardContent>
-//           </Card>
-//         ))}
-//       </div>
-
-//       {/* Natural Language Query Section */}
-//       <Card>
-//         <CardHeader>
-//           <CardTitle>Ask about your payments</CardTitle>
-//         </CardHeader>
-//         <CardContent className="space-y-4">
-//           <div className="flex gap-2">
-//             <Input
-//               placeholder="Why did my success rate drop on Apr 15?"
-//               value={query}
-//               onChange={(e) => setQuery(e.target.value)}
-//               onKeyDown={(e) => {
-//                 if (e.key === "Enter" && !e.shiftKey) {
-//                   e.preventDefault();
-//                   handleQuerySubmit();
-//                 }
-//               }}
-//               disabled={isStreaming}
-//             />
-//             <Button
-//               onClick={handleQuerySubmit}
-//               disabled={!query.trim() || isStreaming}
-//               size="icon"
-//             >
-//               {isStreaming ? (
-//                 <Loader2 className="size-4 animate-spin" />
-//               ) : (
-//                 <Send className="size-4" />
-//               )}
-//             </Button>
-//           </div>
-
-//           {submittedQuery && (
-//             <>
-//               <Separator />
-//               <div className="space-y-2">
-//                 <p className="text-xs font-medium text-muted-foreground">
-//                   Your question:
-//                 </p>
-//                 <p className="text-sm">{submittedQuery}</p>
-//               </div>
-//             </>
-//           )}
-
-//           {(streamingResponse || isStreaming) && (
-//             <div className="rounded-lg border bg-muted/30 p-4">
-//               <div className="text-sm leading-relaxed text-foreground">
-//                 {streamingResponse}
-//                 {isStreaming && <span className="animate-pulse">▊</span>}
-//               </div>
-//             </div>
-//           )}
-//         </CardContent>
-//       </Card>
-//     </div>
-//   );
-// }
-
 "use client";
 
 import {
@@ -386,12 +7,13 @@ import {
   Send,
   Star,
   TrendingUp,
+  Sparkles,
 } from "lucide-react";
 import { useState } from "react";
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  LineChart,
-  Line,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -401,7 +23,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+import { FloatingAIAssistant } from "@/components/shared/FloatingAIAssistant";
+import { Skeleton, SkeletonChart, SkeletonStatsCard } from "@/components/ui/skeleton";
 import {
   useIntelligence,
   type Anomaly,
@@ -427,15 +50,32 @@ const INSIGHT_ICONS: Record<string, React.ReactNode> = {
   alert: <AlertCircle className="size-5 text-orange-500" />,
 };
 
+const chartTooltipStyle = {
+  backgroundColor: "var(--popover)",
+  border: "1px solid var(--border)",
+  borderRadius: "8px",
+  color: "var(--popover-foreground)",
+  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+};
+
 function AnomalyRow({ anomaly }: { anomaly: Anomaly }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border p-3">
-      {ANOMALY_ICONS[anomaly.type] ?? <Info className="size-4 text-gray-500" />}
-      <p className="flex-1 min-w-0 text-sm font-medium leading-relaxed">
-        {anomaly.description}
-      </p>
-      <Badge variant="outline" className={SEVERITY_COLORS[anomaly.severity]}>
-        {anomaly.severity.charAt(0).toUpperCase() + anomaly.severity.slice(1)}
+    <div className="flex items-center justify-between rounded-xl border bg-card/50 p-4 transition-all hover:border-primary/50 group">
+      <div className="flex items-center gap-4">
+        <div className="size-8 rounded-lg bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+          {ANOMALY_ICONS[anomaly.type] ?? <Info className="size-4 text-muted-foreground" />}
+        </div>
+        <div className="space-y-0.5">
+          <p className="text-sm font-semibold leading-relaxed">
+            {anomaly.description}
+          </p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+            Detected recently
+          </p>
+        </div>
+      </div>
+      <Badge variant="outline" className={`${SEVERITY_COLORS[anomaly.severity]} text-[10px] px-2 h-5`}>
+        {anomaly.severity}
       </Badge>
     </div>
   );
@@ -443,16 +83,18 @@ function AnomalyRow({ anomaly }: { anomaly: Anomaly }) {
 
 function InsightCard({ insight }: { insight: Insight }) {
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <CardTitle className="text-sm font-medium">{insight.title}</CardTitle>
-          {INSIGHT_ICONS[insight.icon]}
-        </div>
+    <Card className="hover:border-primary/30 transition-all">
+      <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {insight.title}
+        </CardTitle>
+        {INSIGHT_ICONS[insight.icon]}
       </CardHeader>
       <CardContent>
-        <p className="text-2xl font-bold">{insight.value}</p>
-        <p className="text-xs text-muted-foreground">{insight.description}</p>
+        <p className="text-2xl font-bold tracking-tight">{insight.value}</p>
+        <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+          {insight.description}
+        </p>
       </CardContent>
     </Card>
   );
@@ -481,80 +123,24 @@ function buildChartData(
 
 export default function AIIntelligencePage() {
   const intelligence = useIntelligence();
-  const [query, setQuery] = useState("");
-  const [submittedQuery, setSubmittedQuery] = useState("");
-  const [streamingResponse, setStreamingResponse] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
-
   const data = intelligence.data;
   const isInitialLoading = intelligence.isLoading && !data;
   const isRefreshing = intelligence.isFetching && Boolean(data);
-
-  const handleQuerySubmit = async () => {
-    if (!query.trim()) return;
-    setSubmittedQuery(query);
-    setStreamingResponse("");
-    setIsStreaming(true);
-    setQuery("");
-
-    try {
-      const response = await fetch("/api/intelligence/query", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
-      });
-
-      if (!response.ok) throw new Error("Failed to fetch response");
-
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error("No response body");
-
-      const decoder = new TextDecoder();
-      let result = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        for (const line of decoder.decode(value).split("\n")) {
-          if (!line.startsWith("data: ")) continue;
-          const parsed = JSON.parse(line.slice(6)) as {
-            token?: string;
-            done?: boolean;
-            error?: string;
-          };
-          if (parsed.error) throw new Error(parsed.error);
-          if (parsed.token) {
-            result += parsed.token;
-            setStreamingResponse(result);
-          }
-          if (parsed.done) setIsStreaming(false);
-        }
-      }
-    } catch (error) {
-      setStreamingResponse(
-        `Error: ${error instanceof Error ? error.message : "Failed to get response"}. Please try again.`,
-      );
-      setIsStreaming(false);
-    }
-  };
 
   if (isInitialLoading) {
     return (
       <div className="space-y-6">
         <div className="space-y-1">
-          <h2 className="text-2xl font-semibold">Payment Intelligence</h2>
-          <p className="text-sm text-muted-foreground">
-            Loading AI-generated insights...
-          </p>
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-96" />
         </div>
-        <Card>
-          <CardContent className="flex items-center justify-center py-16">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Loader2 className="size-5 animate-spin" />
-              <span>Analyzing your transactions...</span>
-            </div>
-          </CardContent>
+        <div className="grid gap-4 md:grid-cols-3">
+          <SkeletonStatsCard />
+          <SkeletonStatsCard />
+          <SkeletonStatsCard />
+        </div>
+        <Card className="p-6">
+          <SkeletonChart />
         </Card>
       </div>
     );
@@ -573,12 +159,15 @@ export default function AIIntelligencePage() {
   const chartData = buildChartData(data.forecast);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
-          <h2 className="text-2xl font-semibold">Payment Intelligence</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold tracking-tight">Payment Intelligence</h2>
+            <Sparkles className="size-5 text-primary animate-pulse" />
+          </div>
           <p className="text-sm text-muted-foreground">
-            AI-generated insights from your transaction data
+            AI-generated behavioral insights and predictive forecasting.
           </p>
         </div>
         {isRefreshing && (
@@ -587,159 +176,130 @@ export default function AIIntelligencePage() {
       </div>
 
       {data.anomalies.some((a) => a.severity === "critical") && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          🚨 Critical payment issues detected. Immediate attention required.
+        <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-600 flex items-center gap-3">
+          <AlertCircle className="size-4" />
+          <span className="font-semibold">Critical payment anomalies detected.</span>
+          <span className="opacity-80">Check the report below for immediate mitigation steps.</span>
         </div>
       )}
 
       <div className="grid gap-4 md:grid-cols-3">
-        {data.insights.map((insight, i) => (
+        {data.insights.map((insight) => (
           <InsightCard key={insight.title} insight={insight} />
         ))}
       </div>
 
-      {data.anomalies.length > 0 && (
-        <Card>
+      <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+        <Card className="relative overflow-hidden">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>7-Day Revenue Forecast</CardTitle>
+              <div className="text-right">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Predicted total</p>
+                <p className="text-xl font-bold">
+                  ₹{formatCompactNumber(data.forecastTotal)}
+                </p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="min-h-[360px]">
+            {isRefreshing && (
+              <div className="absolute inset-x-6 bottom-6 top-20 z-10 bg-card/50 backdrop-blur-[2px]">
+                <SkeletonChart showHeader={false} />
+              </div>
+            )}
+            <div className={`h-80 transition-opacity duration-300 ${isRefreshing ? "opacity-0" : "opacity-100"}`}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData} margin={{ left: -20, right: 12, top: 10, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="forecastGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--muted-foreground)" stopOpacity={0.1} />
+                      <stop offset="95%" stopColor="var(--muted-foreground)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--border)" opacity={0.5} />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fontSize: 10 }}
+                    interval="preserveStartEnd"
+                    className="text-[10px] uppercase text-muted-foreground"
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(v) => "₹" + formatCompactNumber(Number(v))}
+                    className="text-[10px]"
+                  />
+                  <Tooltip
+                    contentStyle={chartTooltipStyle}
+                    itemStyle={{ fontSize: "12px", fontWeight: "600" }}
+                    labelStyle={{ fontSize: "10px", color: "var(--muted-foreground)", marginBottom: "4px" }}
+                    formatter={(value, name) => [
+                      "₹" + formatCompactNumber(Number(value)),
+                      name === "actual" ? "Actual Revenue" : "AI Forecast",
+                    ]}
+                  />
+                  <Area
+                    type="linear"
+                    dataKey="actual"
+                    stroke="var(--primary)"
+                    strokeWidth={2.5}
+                    fill="url(#actualGradient)"
+                    dot={false}
+                    activeDot={{ r: 4, strokeWidth: 0, fill: "var(--primary)" }}
+                  />
+                  <Area
+                    type="linear"
+                    dataKey="forecast"
+                    stroke="var(--muted-foreground)"
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    fill="url(#forecastGradient)"
+                    dot={false}
+                    activeDot={{ r: 4, strokeWidth: 0, fill: "var(--muted-foreground)" }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+              <div className="mt-4 flex items-center justify-center gap-6 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <div className="h-0.5 w-6 bg-primary" />
+                  <span>Historical Trend</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-0.5 w-6 border-t-2 border-dashed border-muted-foreground" />
+                  <span>AI Prediction</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="flex flex-col">
           <CardHeader>
             <CardTitle>Anomalies Detected</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {data.anomalies.map((anomaly, i) => (
-              <AnomalyRow key={i} anomaly={anomaly} />
-            ))}
+          <CardContent className="flex-1 space-y-3">
+            {data.anomalies.length > 0 ? (
+              data.anomalies.map((anomaly, i) => (
+                <AnomalyRow key={i} anomaly={anomaly} />
+              ))
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center space-y-2 opacity-50">
+                <Sparkles className="size-8" />
+                <p className="text-sm">No anomalies found.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
-      )}
+      </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>7-Day Revenue Forecast</CardTitle>
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground">Predicted total</p>
-              <p className="text-lg font-semibold">
-                ₹{formatCompactNumber(data.forecastTotal)}
-              </p>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis
-                  dataKey="date"
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 11 }}
-                  interval="preserveStartEnd"
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(v) => "₹" + formatCompactNumber(Number(v))}
-                />
-                <Tooltip
-                  formatter={(value, name) => [
-                    "₹" + formatCompactNumber(Number(value)),
-                    name === "actual" ? "Actual" : "Forecast",
-                  ]}
-                  contentStyle={{
-                    backgroundColor: "var(--background)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "6px",
-                    fontSize: "12px",
-                  }}
-                />
-                <Line
-                  type="linear"
-                  dataKey="actual"
-                  stroke="#6366f1"
-                  strokeWidth={2}
-                  dot={false}
-                  connectNulls={false}
-                  isAnimationActive={false}
-                />
-                <Line
-                  type="linear"
-                  dataKey="forecast"
-                  stroke="#94a3b8"
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={false}
-                  connectNulls={false}
-                  isAnimationActive={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-4 flex gap-6 text-xs text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <div className="h-0.5 w-4 bg-indigo-500" />
-              <span>Actual</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-0.5 w-4 border-t-2 border-dashed border-slate-400" />
-              <span>Forecast</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Ask about your payments</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <Input
-              placeholder="Why did my success rate drop on Apr 15?"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleQuerySubmit();
-                }
-              }}
-              disabled={isStreaming}
-            />
-            <Button
-              onClick={handleQuerySubmit}
-              disabled={!query.trim() || isStreaming}
-              size="icon"
-            >
-              {isStreaming ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Send className="size-4" />
-              )}
-            </Button>
-          </div>
-
-          {submittedQuery && (
-            <>
-              <Separator />
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">
-                  Your question
-                </p>
-                <p className="text-sm">{submittedQuery}</p>
-              </div>
-            </>
-          )}
-
-          {(streamingResponse || isStreaming) && (
-            <div className="rounded-lg border bg-muted/30 p-4">
-              <p className="text-sm leading-relaxed">
-                {streamingResponse}
-                {isStreaming && <span className="animate-pulse">▊</span>}
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <FloatingAIAssistant />
     </div>
   );
 }

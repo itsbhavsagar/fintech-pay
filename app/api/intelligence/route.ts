@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 import { requireSessionUser } from "@/lib/auth";
 import { jsonError } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
@@ -267,164 +268,187 @@ function calculateForecast(dailyRevenue: Map<string, number>): {
 export async function GET(): Promise<NextResponse> {
   try {
     const user = await requireSessionUser();
-    const today = startOfUtcDay(new Date());
-    const startDate = addDays(today, -29);
 
-    const transactions = await prisma.transaction.findMany({
-      where: {
-        userId: user.id,
-        createdAt: {
-          gte: startDate,
-        },
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-    });
+    const getIntelligenceData = unstable_cache(
+      async (uid: string) => {
+        const today = startOfUtcDay(new Date());
+        const startDate = addDays(today, -29);
 
-    const anomalies = computeAnomalies(transactions);
-    const dailyRevenue = new Map<string, number>();
-    for (let i = 0; i < 30; i++) {
-      const day = dayKey(addDays(today, -(29 - i)));
-      dailyRevenue.set(day, 0);
-    }
+        const transactions = await prisma.transaction.findMany({
+          where: {
+            userId: uid,
+            createdAt: {
+              gte: startDate,
+            },
+          },
+          select: {
+            amount: true,
+            status: true,
+            createdAt: true,
+            paymentMethod: true,
+            country: true,
+            currency: true,
+          },
+          orderBy: {
+            createdAt: "asc",
+          },
+        });
 
-    for (const tx of transactions) {
-      const day = dayKey(tx.createdAt);
-      if (dailyRevenue.has(day)) {
-        dailyRevenue.set(day, (dailyRevenue.get(day) ?? 0) + tx.amount);
-      }
-    }
-
-    const { data: forecastData, forecastTotal } =
-      calculateForecast(dailyRevenue);
-
-    const dayOfWeekStats = new Map<
-      string,
-      { successful: number; total: number }
-    >();
-    const dayNames = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
-
-    for (const tx of transactions) {
-      const dayName = dayNames[tx.createdAt.getUTCDay()];
-      const current = dayOfWeekStats.get(dayName) ?? {
-        successful: 0,
-        total: 0,
-      };
-      current.total++;
-      if (tx.status === "captured" || tx.status === "success") {
-        current.successful++;
-      }
-      dayOfWeekStats.set(dayName, current);
-    }
-
-    let bestDay = "Monday";
-    let bestRate = 0;
-    for (const [day, stats] of dayOfWeekStats) {
-      const rate = stats.total > 0 ? (stats.successful / stats.total) * 100 : 0;
-      if (rate > bestRate) {
-        bestRate = rate;
-        bestDay = day;
-      }
-    }
-
-    const countryRevenue = new Map<string, number>();
-    for (const tx of transactions) {
-      countryRevenue.set(
-        tx.country,
-        (countryRevenue.get(tx.country) ?? 0) + tx.amount,
-      );
-    }
-    let topCountry = "Unknown";
-    let topRevenue = 0;
-    let topCurrency = "USD";
-    for (const tx of transactions) {
-      if (
-        countryRevenue.get(tx.country) ??
-        (0 > topRevenue && tx.country === tx.country)
-      ) {
-        topCountry = tx.country;
-        topRevenue = countryRevenue.get(tx.country) ?? 0;
-        topCurrency = tx.currency;
-        break;
-      }
-    }
-
-    let maxRevenue = 0;
-    for (const [country, revenue] of countryRevenue) {
-      if (revenue > maxRevenue) {
-        maxRevenue = revenue;
-        topCountry = country;
-      }
-    }
-
-    for (const tx of transactions) {
-      if (tx.country === topCountry) {
-        topCurrency = tx.currency;
-        break;
-      }
-    }
-
-    const methodStats = new Map<string, { total: number; failed: number }>();
-    for (const tx of transactions) {
-      const current = methodStats.get(tx.paymentMethod) ?? {
-        total: 0,
-        failed: 0,
-      };
-      current.total++;
-      if (tx.status !== "captured" && tx.status !== "success") {
-        current.failed++;
-      }
-      methodStats.set(tx.paymentMethod, current);
-    }
-
-    let riskiestMethod = "Card";
-    let highestFailureRate = 0;
-    for (const [method, stats] of methodStats) {
-      if (stats.total >= 3) {
-        const failureRate = (stats.failed / stats.total) * 100;
-        if (failureRate > highestFailureRate) {
-          highestFailureRate = failureRate;
-          riskiestMethod = method;
+        const anomalies = computeAnomalies(transactions as Transaction[]);
+        const dailyRevenue = new Map<string, number>();
+        for (let i = 0; i < 30; i++) {
+          const day = dayKey(addDays(today, -(29 - i)));
+          dailyRevenue.set(day, 0);
         }
-      }
-    }
 
-    const insights: Insight[] = [
-      {
-        title: "Best Performing Day",
-        value: bestDay,
-        description: `${bestRate.toFixed(0)}% avg success rate`,
-        icon: "star",
-      },
-      {
-        title: "Highest Revenue Country",
-        value: topCountry,
-        description: `${formatCurrency(topRevenue, topCurrency)} this month`,
-        icon: "trending",
-      },
-      {
-        title: "Payment Method to Watch",
-        value: riskiestMethod,
-        description: `${highestFailureRate.toFixed(0)}% failure rate`,
-        icon: "alert",
-      },
-    ];
+        for (const tx of transactions) {
+          const day = dayKey(tx.createdAt);
+          if (dailyRevenue.has(day)) {
+            dailyRevenue.set(day, (dailyRevenue.get(day) ?? 0) + tx.amount);
+          }
+        }
 
-    return NextResponse.json({
-      anomalies,
-      forecast: forecastData,
-      forecastTotal: Math.round(forecastTotal),
-      insights,
-      transactionCount: transactions.length,
+        const { data: forecastData, forecastTotal } =
+          calculateForecast(dailyRevenue);
+
+        const dayOfWeekStats = new Map<
+          string,
+          { successful: number; total: number }
+        >();
+        const dayNames = [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ];
+
+        for (const tx of transactions) {
+          const dayName = dayNames[tx.createdAt.getUTCDay()];
+          const current = dayOfWeekStats.get(dayName) ?? {
+            successful: 0,
+            total: 0,
+          };
+          current.total++;
+          if (tx.status === "captured" || tx.status === "success") {
+            current.successful++;
+          }
+          dayOfWeekStats.set(dayName, current);
+        }
+
+        let bestDay = "Monday";
+        let bestRate = 0;
+        for (const [day, stats] of dayOfWeekStats) {
+          const rate = stats.total > 0 ? (stats.successful / stats.total) * 100 : 0;
+          if (rate > bestRate) {
+            bestRate = rate;
+            bestDay = day;
+          }
+        }
+
+        const countryRevenue = new Map<string, number>();
+        for (const tx of transactions) {
+          countryRevenue.set(
+            tx.country,
+            (countryRevenue.get(tx.country) ?? 0) + tx.amount,
+          );
+        }
+        let topCountry = "Unknown";
+        let topRevenue = 0;
+        let topCurrency = "USD";
+        for (const tx of transactions) {
+          if (
+            countryRevenue.get(tx.country) ??
+            (0 > topRevenue && tx.country === tx.country)
+          ) {
+            topCountry = tx.country;
+            topRevenue = countryRevenue.get(tx.country) ?? 0;
+            topCurrency = tx.currency;
+            break;
+          }
+        }
+
+        let maxRevenue = 0;
+        for (const [country, revenue] of countryRevenue) {
+          if (revenue > maxRevenue) {
+            maxRevenue = revenue;
+            topCountry = country;
+          }
+        }
+
+        for (const tx of transactions) {
+          if (tx.country === topCountry) {
+            topCurrency = tx.currency;
+            break;
+          }
+        }
+
+        const methodStats = new Map<string, { total: number; failed: number }>();
+        for (const tx of transactions) {
+          const current = methodStats.get(tx.paymentMethod) ?? {
+            total: 0,
+            failed: 0,
+          };
+          current.total++;
+          if (tx.status !== "captured" && tx.status !== "success") {
+            current.failed++;
+          }
+          methodStats.set(tx.paymentMethod, current);
+        }
+
+        let riskiestMethod = "Card";
+        let highestFailureRate = 0;
+        for (const [method, stats] of methodStats) {
+          if (stats.total >= 3) {
+            const failureRate = (stats.failed / stats.total) * 100;
+            if (failureRate > highestFailureRate) {
+              highestFailureRate = failureRate;
+              riskiestMethod = method;
+            }
+          }
+        }
+
+        const insights: Insight[] = [
+          {
+            title: "Best Performing Day",
+            value: bestDay,
+            description: `${bestRate.toFixed(0)}% avg success rate`,
+            icon: "star",
+          },
+          {
+            title: "Highest Revenue Country",
+            value: topCountry,
+            description: `${formatCurrency(topRevenue, topCurrency)} this month`,
+            icon: "trending",
+          },
+          {
+            title: "Payment Method to Watch",
+            value: riskiestMethod,
+            description: `${highestFailureRate.toFixed(0)}% failure rate`,
+            icon: "alert",
+          },
+        ];
+
+        return {
+          anomalies,
+          forecast: forecastData,
+          forecastTotal: Math.round(forecastTotal),
+          insights,
+          transactionCount: transactions.length,
+        };
+      },
+      ["intelligence"],
+      { revalidate: 300, tags: [`intelligence-${user.id}`] }
+    );
+
+    const data = await getIntelligenceData(user.id);
+
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=300",
+      },
     });
   } catch (error: unknown) {
     return jsonError(error);

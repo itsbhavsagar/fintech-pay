@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 const profileSchema = z.object({
   name: z.string().min(2).max(80),
   businessName: z.string().min(2).max(120),
+  image: z.string().url().nullable().optional(),
 });
 
 export async function PATCH(request: Request): Promise<NextResponse> {
@@ -22,6 +23,7 @@ export async function PATCH(request: Request): Promise<NextResponse> {
         id: true,
         email: true,
         name: true,
+        image: true,
         businessName: true,
         apiKey: true,
         webhookUrl: true,

@@ -79,15 +79,35 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           id: "desc",
         },
       ],
+      select: {
+        id: true,
+        amount: true,
+        currency: true,
+        status: true,
+        paymentState: true,
+        country: true,
+        paymentMethod: true,
+        razorpayId: true,
+        idempotencyKey: true,
+        description: true,
+        createdAt: true,
+      },
     });
 
     const visibleTransactions = transactions.slice(0, limit);
     const nextCursor = transactions.length > limit ? (visibleTransactions.at(-1)?.id ?? null) : null;
 
-    return NextResponse.json({
-      transactions: visibleTransactions.map(toTransactionDto),
-      nextCursor,
-    });
+    return NextResponse.json(
+      {
+        transactions: visibleTransactions.map((tx) => toTransactionDto(tx as any)),
+        nextCursor,
+      },
+      {
+        headers: {
+          "Cache-Control": "private, max-age=60, stale-while-revalidate=300",
+        },
+      }
+    );
   } catch (error: unknown) {
     return jsonError(error);
   }

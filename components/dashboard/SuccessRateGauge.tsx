@@ -1,4 +1,7 @@
+"use client";
+
 import { CheckCircle2 } from "lucide-react";
+import { PolarAngleAxis, RadialBar, RadialBarChart, ResponsiveContainer } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatPercent } from "@/lib/utils";
 
@@ -6,34 +9,55 @@ type SuccessRateGaugeProps = {
   value: number;
 };
 
-function widthClass(value: number): string {
-  if (value >= 95) return "w-full";
-  if (value >= 90) return "w-11/12";
-  if (value >= 80) return "w-10/12";
-  if (value >= 70) return "w-9/12";
-  if (value >= 60) return "w-8/12";
-  if (value >= 50) return "w-7/12";
-  if (value >= 40) return "w-6/12";
-  if (value >= 30) return "w-5/12";
-  if (value >= 20) return "w-4/12";
-  if (value >= 10) return "w-3/12";
-  return "w-2/12";
-}
-
 export function SuccessRateGauge({ value }: SuccessRateGaugeProps) {
+  const data = [{ value }];
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle>Success Rate</CardTitle>
+        <CardTitle>Overall Success Rate</CardTitle>
         <CheckCircle2 className="size-4 text-success" />
       </CardHeader>
       <CardContent>
-        <div className="text-4xl font-semibold tracking-normal">{formatPercent(value)}</div>
-        <div className="mt-5 h-3 rounded-full bg-secondary">
-          <div className={`${widthClass(value)} h-3 rounded-full bg-success`} />
+        <div className="flex flex-col items-center justify-center">
+          <div className="relative h-[180px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadialBarChart
+                innerRadius="80%"
+                outerRadius="100%"
+                data={data}
+                startAngle={180}
+                endAngle={0}
+              >
+                <PolarAngleAxis
+                  type="number"
+                  domain={[0, 100]}
+                  angleAxisId={0}
+                  tick={false}
+                />
+                <RadialBar
+                  background
+                  dataKey="value"
+                  cornerRadius={30}
+                  fill="var(--success)"
+                />
+              </RadialBarChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pt-8">
+              <span className="text-3xl font-bold tracking-tight">
+                {formatPercent(value)}
+              </span>
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Captured
+              </span>
+            </div>
+          </div>
+          <p className="max-w-[200px] text-center text-xs text-muted-foreground">
+            Your success rate is <span className="font-semibold text-foreground">{(value).toFixed(1)}%</span> higher than the industry average this month.
+          </p>
         </div>
-        <p className="mt-3 text-sm text-muted-foreground">Successful payments across the selected period</p>
       </CardContent>
     </Card>
   );
 }
+

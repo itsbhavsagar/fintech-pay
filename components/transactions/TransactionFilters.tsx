@@ -23,6 +23,8 @@ type TransactionFiltersProps = {
 const statuses: readonly (TransactionStatus | "all")[] = ["all", "success", "failed", "pending"];
 
 export function TransactionFilters({ value, currencies, onChange, onExport }: TransactionFiltersProps) {
+  const today = new Date().toISOString().split("T")[0];
+
   return (
     <div className="grid gap-3 rounded-lg border bg-card p-4 md:grid-cols-[1.5fr_repeat(4,1fr)_auto]">
       <div className="relative">
@@ -62,8 +64,21 @@ export function TransactionFilters({ value, currencies, onChange, onExport }: Tr
           ))}
         </SelectContent>
       </Select>
-      <Input type="date" value={value.from} onChange={(event) => onChange({ ...value, from: event.target.value })} />
-      <Input type="date" value={value.to} onChange={(event) => onChange({ ...value, to: event.target.value })} />
+      <div className="flex items-center gap-2">
+        <Input
+          type="date"
+          value={value.from}
+          max={today}
+          onChange={(event) => onChange({ ...value, from: event.target.value })}
+        />
+        <span className="text-xs font-medium text-muted-foreground">TO</span>
+        <Input
+          type="date"
+          value={value.to}
+          max={today}
+          onChange={(event) => onChange({ ...value, to: event.target.value })}
+        />
+      </div>
       <Button variant="outline" onClick={onExport}>
         <Download className="size-4" />
         Export

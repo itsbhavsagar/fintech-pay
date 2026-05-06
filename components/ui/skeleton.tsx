@@ -8,19 +8,19 @@ type SkeletonProps = {
 export function Skeleton({ className, variant = "text" }: SkeletonProps) {
   const variants = {
     text: "h-4 w-full rounded",
-    card: "h-32 w-full rounded-lg",
+    card: "h-[160px] w-full rounded-lg",
     avatar: "size-10 rounded-full",
     line: "h-2 w-full rounded-full",
-    paragraph: "space-y-2",
-    chart: "h-80 w-full rounded-lg",
+    paragraph: "space-y-3",
+    chart: "h-[300px] w-full rounded-lg",
   };
 
   if (variant === "paragraph") {
     return (
-      <div className="space-y-2">
-        <div className="h-4 w-3/4 rounded bg-secondary animate-shimmer" />
-        <div className="h-4 w-full rounded bg-secondary animate-shimmer" />
-        <div className="h-4 w-5/6 rounded bg-secondary animate-shimmer" />
+      <div className={cn("space-y-3", className)}>
+        <div className="h-4 w-[85%] rounded animate-shimmer" />
+        <div className="h-4 w-full rounded animate-shimmer" />
+        <div className="h-4 w-[70%] rounded animate-shimmer" />
       </div>
     );
   }
@@ -28,7 +28,7 @@ export function Skeleton({ className, variant = "text" }: SkeletonProps) {
   return (
     <div
       className={cn(
-        "bg-secondary animate-shimmer",
+        "animate-shimmer",
         variants[variant as keyof typeof variants],
         className,
       )}
@@ -41,25 +41,34 @@ export function Skeleton({ className, variant = "text" }: SkeletonProps) {
  */
 export function SkeletonStatsCard() {
   return (
-    <div className="space-y-4 rounded-lg border bg-card p-6">
-      <Skeleton className="h-4 w-24" />
-      <Skeleton className="h-8 w-40" />
-      <Skeleton className="h-3 w-32" />
+    <div className="space-y-5 rounded-xl border bg-card p-6 shadow-sm">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="size-8 rounded-lg" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-9 w-32" />
+        <Skeleton className="h-3 w-44" />
+      </div>
     </div>
   );
 }
 
 /**
- * Skeleton for transaction table
+ * Skeleton for transaction row
  */
 export function SkeletonTransactionRow() {
   return (
-    <div className="flex items-center gap-4 border-b py-4 px-2">
-      <Skeleton className="size-4 rounded" />
-      <Skeleton className="h-4 w-24" />
-      <Skeleton className="h-4 w-16" />
-      <Skeleton className="h-4 w-20" />
-      <Skeleton className="size-6 rounded" />
+    <div className="flex items-center justify-between border-b py-4 px-4">
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-4 w-12 font-mono" />
+        <Skeleton className="h-4 w-48" />
+      </div>
+      <div className="flex items-center gap-8">
+        <Skeleton className="h-6 w-20 rounded-full" />
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-4 w-20" />
+      </div>
     </div>
   );
 }
@@ -69,8 +78,8 @@ export function SkeletonTransactionRow() {
  */
 export function SkeletonTransactionTable() {
   return (
-    <div className="space-y-2">
-      {Array.from({ length: 5 }).map((_, i) => (
+    <div className="divide-y divide-border">
+      {Array.from({ length: 6 }).map((_, i) => (
         <SkeletonTransactionRow key={i} />
       ))}
     </div>
@@ -78,8 +87,14 @@ export function SkeletonTransactionTable() {
 }
 
 /**
- * Skeleton for chart
+ * Skeleton for chart content
  */
-export function SkeletonChart() {
-  return <Skeleton variant="chart" />;
+export function SkeletonChart({ showHeader = true }: { showHeader?: boolean }) {
+  return (
+    <div className="space-y-4">
+      {showHeader && <Skeleton className="h-5 w-40" />}
+      <Skeleton variant="chart" className="h-[240px]" />
+    </div>
+  );
 }
+

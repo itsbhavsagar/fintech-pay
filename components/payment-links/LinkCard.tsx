@@ -1,15 +1,16 @@
 "use client";
 
-import { Copy, ExternalLink, Loader2 } from "lucide-react";
+import { Copy, ExternalLink, Loader2, Link2, Calendar, ShieldCheck, Globe } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { Switch } from "@/components/ui/switch";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { PaymentLinkDto } from "@/types/domain";
 import Link from "next/link";
-import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 
 type LinkCardProps = {
   paymentLink: PaymentLinkDto;
@@ -18,7 +19,8 @@ type LinkCardProps = {
 
 export function LinkCard({ paymentLink, onStatusChange }: LinkCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
+  const queryClient = useQueryClient();
+  const isActive = paymentLink.status === "active";
 
   async function copyLink() {
     if (paymentLink.shortUrl) {
@@ -30,7 +32,7 @@ export function LinkCard({ paymentLink, onStatusChange }: LinkCardProps) {
   async function handleToggle() {
     setIsUpdating(true);
     try {
-      const newStatus = paymentLink.status === "active" ? "expired" : "active";
+      const newStatus = isActive ? "expired" : "active";
       const response = await fetch(`/api/payment-links/${paymentLink.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -38,7 +40,8 @@ export function LinkCard({ paymentLink, onStatusChange }: LinkCardProps) {
       });
 
       if (response.ok) {
-        setShowDialog(false);
+        toast.success(`Payment link ${newStatus === "active" ? "enabled" : "disabled"}`);
+        await queryClient.invalidateQueries({ queryKey: ["payment-links"] });
         onStatusChange?.(paymentLink.id, newStatus);
       }
     } finally {
@@ -47,104 +50,85 @@ export function LinkCard({ paymentLink, onStatusChange }: LinkCardProps) {
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
-        <div>
-          <CardTitle className="text-base">{paymentLink.title}</CardTitle>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {formatDate(paymentLink.createdAt)}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <StatusBadge status={paymentLink.status} />
-          <Dialog open={showDialog} onOpenChange={setShowDialog}>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-6 text-xs">
-                {paymentLink.status === "active" ? "Disable" : "Enable"}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-sm">
-              <div className="space-y-4">
-                <div>
-                  <h2 className="text-lg font-semibold">
-                    {paymentLink.status === "active" ? "Disable" : "Enable"}{" "}
-                    Payment Link?
-                  </h2>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {paymentLink.status === "active"
-                      ? `This will disable the payment link "${paymentLink.title}". Customers won't be able to access it anymore.`
-                      : `This will enable the payment link "${paymentLink.title}". Customers can access it again.`}
-                  </p>
-                </div>
-                <div className="flex gap-3 justify-end">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowDialog(false)}
-                    disabled={isUpdating}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleToggle}
-                    disabled={isUpdating}
-                    variant={
-                      paymentLink.status === "active"
-                        ? "destructive"
-                        : "default"
-                    }
-                  >
-                    {isUpdating ? (
-                      <>
-                        <Loader2 className="mr-2 size-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      "Continue"
-                    )}
-                  </Button>
-                </div>
+    <Card className={`group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-primary/30 ${
+      !isActive ? "bg-secondary/20 grayscale-[0.4]" : "bg-card"
+    }`}>
+      <CardContent className="p-0">
+        {/* Top Section */}
+        <div className="flex items-center justify-between p-5 border-b border-border/40 bg-secondary/10 group-hover:bg-secondary/20 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg transition-colors ${isActive ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>
+              <Link2 className="size-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold tracking-tight">{paymentLink.title}</h3>
+              <div className="flex items-center gap-2 mt-0.5">
+                <Calendar className="size-3 text-muted-foreground" />
+                <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">
+                  {formatDate(paymentLink.createdAt)}
+                </span>
               </div>
-            </DialogContent>
-          </Dialog>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              {isUpdating && <Loader2 className="size-3 animate-spin text-muted-foreground" />}
+              <Switch
+                checked={isActive}
+                onCheckedChange={handleToggle}
+                disabled={isUpdating}
+                className="scale-90"
+              />
+            </div>
+            <StatusBadge status={paymentLink.status} />
+          </div>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <p className="text-2xl font-semibold tracking-normal">
+
+        {/* Bottom Section */}
+        <div className="p-5 flex items-end justify-between gap-4">
+          <div className="space-y-1">
+            <p className="text-2xl font-black tracking-tighter">
               {formatCurrency(paymentLink.amount, paymentLink.currency)}
             </p>
-            <p className="mt-1 truncate text-sm text-muted-foreground">
-              {paymentLink.shortUrl ?? "Razorpay link pending"}
-            </p>
+            <div className="flex items-center gap-1.5 py-1 px-2 rounded-md bg-secondary/50 w-fit">
+              <Globe className="size-3 text-muted-foreground" />
+              <p className="text-[10px] font-medium text-muted-foreground truncate max-w-[200px]">
+                {paymentLink.shortUrl ?? "Link pending generation..."}
+              </p>
+            </div>
           </div>
-          <div className="flex gap-2">
+
+          <div className="flex gap-2 shrink-0">
             <Button
-              variant="outline"
+              variant="secondary"
               size="icon"
               onClick={copyLink}
               disabled={!paymentLink.shortUrl}
-              aria-label="Copy payment link"
+              className="size-9 rounded-xl hover:bg-primary hover:text-primary-foreground transition-all shadow-sm"
+              title="Copy Link"
             >
               <Copy className="size-4" />
             </Button>
-            {paymentLink.shortUrl ? (
+            {paymentLink.shortUrl && (
               <Button
-                variant="outline"
+                variant="secondary"
                 size="icon"
                 asChild
-                aria-label="Open payment link"
+                className="size-9 rounded-xl hover:bg-primary hover:text-primary-foreground transition-all shadow-sm"
+                title="Open Link"
               >
-                <Link
-                  href={paymentLink.shortUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <Link href={paymentLink.shortUrl} target="_blank" rel="noreferrer">
                   <ExternalLink className="size-4" />
                 </Link>
               </Button>
-            ) : null}
+            )}
           </div>
+        </div>
+
+        {/* Subtle Security Indicator */}
+        <div className="px-5 py-2 bg-secondary/5 flex items-center gap-2 opacity-60">
+          <ShieldCheck className="size-3" />
+          <span className="text-[9px] font-bold uppercase tracking-widest">Idempotent • Secured by Neon</span>
         </div>
       </CardContent>
     </Card>

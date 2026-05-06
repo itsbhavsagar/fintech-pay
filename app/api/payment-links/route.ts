@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import { jsonError, parseJsonBody } from "@/lib/api";
 import { requireSessionUser } from "@/lib/auth";
@@ -20,14 +21,32 @@ export async function GET(): Promise<NextResponse> {
       where: {
         userId: user.id,
       },
+      select: {
+        id: true,
+        title: true,
+        amount: true,
+        currency: true,
+        razorpayLinkId: true,
+        shortUrl: true,
+        status: true,
+        expiresAt: true,
+        createdAt: true,
+      },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    return NextResponse.json({
-      paymentLinks: paymentLinks.map(toPaymentLinkDto),
-    });
+    return NextResponse.json(
+      {
+        paymentLinks: paymentLinks.map((link) => toPaymentLinkDto(link as any)),
+      },
+      {
+        headers: {
+          "Cache-Control": "private, max-age=60, stale-while-revalidate=300",
+        },
+      }
+    );
   } catch (error: unknown) {
     return jsonError(error);
   }
@@ -45,6 +64,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
     });
 
+    revalidateTag(`dashboard-stats-${user.id}`);
     return NextResponse.json({ paymentLink }, { status: 201 });
   } catch (error: unknown) {
     return jsonError(error);

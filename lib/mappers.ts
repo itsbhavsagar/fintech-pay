@@ -39,7 +39,7 @@ export function toTransactionDto(transaction: Transaction): TransactionDto {
     amount: transaction.amount,
     currency: transaction.currency,
     status: normalizeStatus(transaction.status, transactionStatuses, "pending"),
-    paymentState: transaction.paymentState,
+    paymentState: transaction.paymentState as any,
     country: transaction.country,
     paymentMethod: transaction.paymentMethod,
     razorpayId: transaction.razorpayId,
