@@ -4,6 +4,8 @@ import { requireSessionUser } from "@/lib/auth";
 import { jsonError } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(): Promise<NextResponse> {
   try {
     const user = await requireSessionUser();

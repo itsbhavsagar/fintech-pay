@@ -3,8 +3,8 @@ import type { PaymentLinks } from "razorpay/dist/types/paymentLink";
 import type { PaymentLinkStatus } from "@/types/domain";
 
 export const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+  key_id: process.env.RAZORPAY_KEY_ID!,
+  key_secret: process.env.RAZORPAY_KEY_SECRET!,
 });
 
 export type RazorpayPaymentLink = PaymentLinks.RazorpayPaymentLink;
