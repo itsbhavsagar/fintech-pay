@@ -68,13 +68,13 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f3f4f6] p-4 md:p-8">
-      <div className="flex w-full max-w-6xl overflow-hidden rounded-[2.5rem] bg-white p-4 shadow-xl md:p-6 lg:h-[85vh]">
+    <main className="flex min-h-screen items-center justify-center bg-secondary p-4 md:p-8">
+      <div className="flex w-full max-w-6xl overflow-hidden rounded-[2.5rem] bg-card p-4 shadow-xl md:p-6 lg:h-[85vh]">
         <div className="relative hidden w-1/2 overflow-hidden rounded-4xl lg:block">
           <Image
             width={1920}
             height={1080}
-            src="https://images.pexels.com/photos/18069861/pexels-photo-18069861.png"
+            src="https://images.pexels.com/photos/18069861/pexels-photo-18069861.png?auto=compress&cs=tinysrgb&w=1400&dpr=1&fm=webp&q=82"
             alt="Abstract Art"
             className="h-full w-full object-cover"
           />
@@ -87,21 +87,23 @@ export default function LoginPage() {
             <div className="flex flex-col items-center space-y-3 text-center">
               <div className="mb-2 flex items-center gap-2">
                 <Logo />
-                <span className="text-4xl font-bold tracking-tight text-zinc-800">
+                <span className="text-4xl font-bold tracking-tight text-foreground">
                   PaySense
                 </span>
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-zinc-700">
+              <h1 className="text-xl font-bold tracking-tight text-foreground/80">
                 Welcome Back!{" "}
               </h1>
-              <p className="text-sm text-zinc-500">Login to your account</p>
+              <p className="text-sm text-muted-foreground">
+                Login to your account
+              </p>
             </div>
 
             <form className="space-y-5" onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <Label
                   htmlFor="email"
-                  className="text-sm font-medium text-zinc-700"
+                  className="text-sm font-medium text-foreground/70"
                 >
                   Email
                 </Label>
@@ -112,7 +114,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   required
-                  className="h-12 rounded-full border-zinc-200 bg-zinc-50 px-6 focus:border-primary focus:ring-primary/20 mt-2"
+                  className="h-12 rounded-full border-border bg-muted/50 px-6 focus:border-primary focus:ring-primary/20 mt-2"
                 />
               </div>
 
@@ -121,7 +123,7 @@ export default function LoginPage() {
                   <Label
                     htmlFor="password"
                     title="Password"
-                    className="text-sm font-medium text-zinc-700"
+                    className="text-sm font-medium text-foreground/70"
                   >
                     Password
                   </Label>
@@ -133,17 +135,17 @@ export default function LoginPage() {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   required
-                  className="h-12 rounded-full border-zinc-200 bg-zinc-50 px-6 focus:border-primary focus:ring-primary/20"
+                  className="h-12 rounded-full border-border bg-muted/50 px-6 focus:border-primary focus:ring-primary/20"
                 />
               </div>
 
               <div className="flex items-center justify-between px-1">
-                <label className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer">
+                <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
                   <input
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="rounded border-zinc-300 text-primary focus:ring-primary"
+                    className="rounded border-border text-primary focus:ring-primary"
                   />
                   Remember login
                 </label>
@@ -162,7 +164,7 @@ export default function LoginPage() {
               ) : null}
 
               <Button
-                className="w-full h-12 rounded-full bg-primary text-base font-semibold transition-all hover:opacity-90"
+                className="w-full h-12 rounded-full bg-primary text-primary-foreground text-base font-semibold transition-all hover:opacity-90"
                 type="submit"
                 disabled={loading}
               >
@@ -175,16 +177,16 @@ export default function LoginPage() {
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-zinc-100" />
+                <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-4 text-zinc-400">
+                <span className="bg-card px-4 text-muted-foreground">
                   Or continue with
                 </span>
               </div>
             </div>
 
-            <p className="text-center text-sm text-zinc-500">
+            <p className="text-center text-sm text-muted-foreground">
               New here?{" "}
               <Link
                 href="/register"

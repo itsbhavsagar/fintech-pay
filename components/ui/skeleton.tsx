@@ -36,9 +36,6 @@ export function Skeleton({ className, variant = "text" }: SkeletonProps) {
   );
 }
 
-/**
- * Skeleton for stats card
- */
 export function SkeletonStatsCard() {
   return (
     <div className="space-y-5 rounded-xl border bg-card p-6 shadow-sm">
@@ -54,9 +51,6 @@ export function SkeletonStatsCard() {
   );
 }
 
-/**
- * Skeleton for transaction row
- */
 export function SkeletonTransactionRow() {
   return (
     <div className="flex items-center justify-between border-b py-4 px-4">
@@ -73,9 +67,6 @@ export function SkeletonTransactionRow() {
   );
 }
 
-/**
- * Skeleton for full transaction table
- */
 export function SkeletonTransactionTable() {
   return (
     <div className="divide-y divide-border">
@@ -86,9 +77,6 @@ export function SkeletonTransactionTable() {
   );
 }
 
-/**
- * Skeleton for chart content
- */
 export function SkeletonChart({ showHeader = true }: { showHeader?: boolean }) {
   return (
     <div className="space-y-4">
@@ -97,4 +85,3 @@ export function SkeletonChart({ showHeader = true }: { showHeader?: boolean }) {
     </div>
   );
 }
-

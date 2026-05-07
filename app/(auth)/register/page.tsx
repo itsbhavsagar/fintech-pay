@@ -48,13 +48,13 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f3f4f6] p-4 md:p-8">
-      <div className="flex w-full max-w-6xl overflow-hidden rounded-[2.5rem] bg-white p-4 shadow-xl md:p-6 lg:h-[85vh]">
+    <main className="flex min-h-screen items-center justify-center bg-secondary p-4 md:p-8">
+      <div className="flex w-full max-w-6xl overflow-hidden rounded-[2.5rem] bg-card p-4 shadow-xl md:p-6 lg:h-[85vh]">
         <div className="relative hidden w-1/2 overflow-hidden rounded-4xl lg:block">
           <Image
             width={1920}
             height={1080}
-            src="https://images.pexels.com/photos/34165092/pexels-photo-34165092.png"
+            src="https://images.pexels.com/photos/18069828/pexels-photo-18069828.png?auto=compress&cs=tinysrgb&w=1400&dpr=1&fm=webp&q=82"
             alt="Abstract Art"
             className="h-full w-full object-cover"
           />
@@ -66,14 +66,14 @@ export default function RegisterPage() {
             <div className="flex flex-col items-center space-y-3 text-center">
               <div className="mb-2 flex items-center gap-2">
                 <Logo />
-                <span className="text-4xl font-bold tracking-tight text-zinc-900">
+                <span className="text-4xl font-bold tracking-tight text-foreground">
                   PaySense
                 </span>
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-zinc-900">
+              <h1 className="text-xl font-bold tracking-tight text-foreground">
                 Create your account
               </h1>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-muted-foreground">
                 Join PaySense and start managing your payments
               </p>
             </div>
@@ -82,7 +82,7 @@ export default function RegisterPage() {
               <div className="space-y-1.5">
                 <Label
                   htmlFor="name"
-                  className="text-sm font-medium text-zinc-700 ml-1"
+                  className="text-sm font-medium text-foreground/70 ml-1"
                 >
                   Name
                 </Label>
@@ -92,14 +92,14 @@ export default function RegisterPage() {
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   required
-                  className="h-11 rounded-full border-zinc-200 bg-zinc-50 px-6 focus:border-primary focus:ring-primary/20"
+                  className="h-11 rounded-full border-border bg-muted/50 px-6 focus:border-primary focus:ring-primary/20"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <Label
                   htmlFor="businessName"
-                  className="text-sm font-medium text-zinc-700 ml-1"
+                  className="text-sm font-medium text-foreground/70 ml-1"
                 >
                   Business Name
                 </Label>
@@ -109,14 +109,14 @@ export default function RegisterPage() {
                   value={businessName}
                   onChange={(event) => setBusinessName(event.target.value)}
                   required
-                  className="h-11 rounded-full border-zinc-200 bg-zinc-50 px-6 focus:border-primary focus:ring-primary/20"
+                  className="h-11 rounded-full border-border bg-muted/50 px-6 focus:border-primary focus:ring-primary/20"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <Label
                   htmlFor="email"
-                  className="text-sm font-medium text-zinc-700 ml-1"
+                  className="text-sm font-medium text-foreground/70 ml-1"
                 >
                   Email
                 </Label>
@@ -127,7 +127,7 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   required
-                  className="h-11 rounded-full border-zinc-200 bg-zinc-50 px-6 focus:border-primary focus:ring-primary/20"
+                  className="h-11 rounded-full border-border bg-muted/50 px-6 focus:border-primary focus:ring-primary/20"
                 />
               </div>
 
@@ -135,7 +135,7 @@ export default function RegisterPage() {
                 <Label
                   htmlFor="password"
                   title="Password"
-                  className="text-sm font-medium text-zinc-700 ml-1"
+                  className="text-sm font-medium text-foreground/70 ml-1"
                 >
                   Password
                 </Label>
@@ -146,7 +146,7 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   required
-                  className="h-11 rounded-full border-zinc-200 bg-zinc-50 px-6 focus:border-primary focus:ring-primary/20"
+                  className="h-11 rounded-full border-border bg-muted/50 px-6 focus:border-primary focus:ring-primary/20"
                 />
               </div>
 
@@ -157,7 +157,7 @@ export default function RegisterPage() {
               ) : null}
 
               <Button
-                className="w-full h-11 rounded-full bg-primary text-base font-semibold transition-all hover:opacity-90 mt-2"
+                className="w-full h-11 rounded-full bg-primary text-primary-foreground text-base font-semibold transition-all hover:opacity-90 mt-2"
                 type="submit"
                 disabled={loading}
               >
@@ -168,7 +168,7 @@ export default function RegisterPage() {
               </Button>
             </form>
 
-            <p className="text-center text-sm text-zinc-500">
+            <p className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link
                 href="/login"

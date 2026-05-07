@@ -24,8 +24,8 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f3f4f6] p-4 md:p-8">
-      <div className="flex w-full max-w-6xl overflow-hidden rounded-[2.5rem] bg-white p-4 shadow-xl md:p-6 lg:h-[85vh]">
+    <main className="flex min-h-screen items-center justify-center bg-secondary p-4 md:p-8">
+      <div className="flex w-full max-w-6xl overflow-hidden rounded-[2.5rem] bg-card p-4 shadow-xl md:p-6 lg:h-[85vh]">
         <div className="relative hidden w-1/2 overflow-hidden rounded-4xl lg:block">
           <Image
             width={1920}
@@ -42,14 +42,14 @@ export default function ForgotPasswordPage() {
             <div className="flex flex-col items-center space-y-3 text-center">
               <div className="mb-2 flex items-center gap-2">
                 <Logo />
-                <span className="text-4xl font-bold tracking-tight text-zinc-800">
+                <span className="text-4xl font-bold tracking-tight text-foreground">
                   PaySense
                 </span>
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-zinc-700">
+              <h1 className="text-xl font-bold tracking-tight text-foreground">
                 {submitted ? "Check your email" : "Reset your password"}
               </h1>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-muted-foreground">
                 {submitted
                   ? "We've sent a password reset link to your email."
                   : "Enter your email address and we'll send you a link to reset your password."}
@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
                 <div className="space-y-2">
                   <Label
                     htmlFor="email"
-                    className="text-sm font-medium text-zinc-700"
+                    className="text-sm font-medium text-foreground/70"
                   >
                     Email
                   </Label>
@@ -72,12 +72,12 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     required
-                    className="h-12 rounded-full mt-3 border-zinc-200 bg-zinc-50 px-6 focus:border-primary focus:ring-primary/20"
+                    className="h-12 rounded-full mt-3 border-border bg-muted/50 px-6 focus:border-primary focus:ring-primary/20"
                   />
                 </div>
 
                 <Button
-                  className="w-full h-12 rounded-full bg-primary text-base font-semibold transition-all hover:opacity-90"
+                  className="w-full h-12 rounded-full bg-primary text-primary-foreground text-base font-semibold transition-all hover:opacity-90"
                   type="submit"
                   disabled={loading}
                 >
@@ -89,12 +89,12 @@ export default function ForgotPasswordPage() {
               </form>
             ) : (
               <div className="text-center">
-                <p className="text-sm text-zinc-500 mb-6">
+                <p className="text-sm text-muted-foreground mb-6">
                   Didn&apos;t receive the email? Check your spam folder or try again.
                 </p>
                 <Button
                   variant="outline"
-                  className="w-full h-12 rounded-full border-zinc-200 font-semibold"
+                  className="w-full h-12 rounded-full border-border font-semibold text-foreground"
                   onClick={() => setSubmitted(false)}
                 >
                   Try another email
@@ -102,7 +102,7 @@ export default function ForgotPasswordPage() {
               </div>
             )}
 
-            <p className="text-center text-sm text-zinc-500 pt-4">
+            <p className="text-center text-sm text-muted-foreground pt-4">
               <Link
                 href="/login"
                 className="inline-flex items-center font-bold text-primary hover:underline"
