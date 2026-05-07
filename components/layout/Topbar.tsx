@@ -58,6 +58,7 @@ export function Topbar({ user: initialUser }: TopbarProps) {
     setIsLoggingOut(true);
     try {
       await fetch("/api/auth/logout", { method: "POST" });
+      localStorage.clear();
       toast.success("Logged out successfully");
       router.push("/login");
     } catch {

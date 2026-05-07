@@ -10,12 +10,29 @@ import { Label } from "@/components/ui/label";
 import { fetchJson } from "@/lib/fetcher";
 import { Logo } from "@/components/Logo";
 
+import { useEffect } from "react";
+
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("demo@paysense.in");
-  const [password, setPassword] = useState("demo123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("rememberedEmail");
+    const savedPassword = localStorage.getItem("rememberedPassword");
+    if (savedEmail && savedPassword) {
+      setEmail(savedEmail);
+      setPassword(savedPassword);
+      setRememberMe(true);
+    } else {
+      // Set default values if nothing is saved
+      setEmail("demo@paysense.in");
+      setPassword("demo123");
+    }
+  }, []);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -28,8 +45,18 @@ export default function LoginPage() {
         body: JSON.stringify({
           email,
           password,
+          rememberMe,
         }),
       });
+
+      if (rememberMe) {
+        localStorage.setItem("rememberedEmail", email);
+        localStorage.setItem("rememberedPassword", password);
+      } else {
+        localStorage.removeItem("rememberedEmail");
+        localStorage.removeItem("rememberedPassword");
+      }
+
       router.push("/");
       router.refresh();
     } catch (caughtError: unknown) {
@@ -58,11 +85,11 @@ export default function LoginPage() {
             <div className="flex flex-col items-center space-y-3 text-center">
               <div className="mb-2 flex items-center gap-2">
                 <Logo />
-                <span className="text-4xl font-bold tracking-tight text-zinc-900">
+                <span className="text-4xl font-bold tracking-tight text-zinc-800">
                   PaySense
                 </span>
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-zinc-900">
+              <h1 className="text-xl font-bold tracking-tight text-zinc-700">
                 Welcome Back!{" "}
               </h1>
               <p className="text-sm text-zinc-500">Login to your account</p>
@@ -112,12 +139,14 @@ export default function LoginPage() {
                 <label className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer">
                   <input
                     type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
                     className="rounded border-zinc-300 text-primary focus:ring-primary"
                   />
                   Remember login
                 </label>
                 <Link
-                  href="#"
+                  href="/forgot-password"
                   className="text-sm font-semibold text-primary hover:underline"
                 >
                   Forgot Password?

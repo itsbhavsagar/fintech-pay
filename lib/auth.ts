@@ -67,13 +67,13 @@ export async function verifyAuthToken(token: string): Promise<TokenUser | null> 
   }
 }
 
-export function setAuthCookie(response: NextResponse, token: string): void {
+export function setAuthCookie(response: NextResponse, token: string, rememberMe: boolean = false): void {
   response.cookies.set(authCookieName, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 7,
+    ...(rememberMe ? { maxAge: 60 * 60 * 24 * 7 } : {}),
   });
 }
 

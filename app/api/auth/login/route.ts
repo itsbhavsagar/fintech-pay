@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 const loginSchema = z.object({
   email: z.string().email().max(120).transform((value) => value.toLowerCase()),
   password: z.string().min(1).max(100),
+  rememberMe: z.boolean().optional().default(false),
 });
 
 export async function POST(request: Request): Promise<NextResponse> {
@@ -40,7 +41,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         createdAt: user.createdAt.toISOString(),
       },
     });
-    setAuthCookie(response, token);
+    setAuthCookie(response, token, input.rememberMe);
 
     return response;
   } catch (error: unknown) {
