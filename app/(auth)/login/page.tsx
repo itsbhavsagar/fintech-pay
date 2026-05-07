@@ -58,11 +58,11 @@ export default function LoginPage() {
             <div className="flex flex-col items-center space-y-3 text-center">
               <div className="mb-2 flex items-center gap-2">
                 <Logo />
-                <span className="text-4xl font-bold tracking-tight text-zinc-800">
+                <span className="text-4xl font-bold tracking-tight text-zinc-900">
                   PaySense
                 </span>
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-zinc-700">
+              <h1 className="text-xl font-bold tracking-tight text-zinc-900">
                 Welcome Back!{" "}
               </h1>
               <p className="text-sm text-zinc-500">Login to your account</p>
@@ -108,6 +108,22 @@ export default function LoginPage() {
                 />
               </div>
 
+              <div className="flex items-center justify-between px-1">
+                <label className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="rounded border-zinc-300 text-primary focus:ring-primary"
+                  />
+                  Remember login
+                </label>
+                <Link
+                  href="#"
+                  className="text-sm font-semibold text-primary hover:underline"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+
               {error ? (
                 <p className="text-center text-sm font-medium text-destructive">
                   {error}
@@ -136,6 +152,7 @@ export default function LoginPage() {
                 </span>
               </div>
             </div>
+
             <p className="text-center text-sm text-zinc-500">
               New here?{" "}
               <Link
