@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/Logo";
+import Image from "next/image";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -26,7 +27,9 @@ export default function ForgotPasswordPage() {
     <main className="flex min-h-screen items-center justify-center bg-[#f3f4f6] p-4 md:p-8">
       <div className="flex w-full max-w-6xl overflow-hidden rounded-[2.5rem] bg-white p-4 shadow-xl md:p-6 lg:h-[85vh]">
         <div className="relative hidden w-1/2 overflow-hidden rounded-4xl lg:block">
-          <img
+          <Image
+            width={1920}
+            height={1080}
             src="https://images.pexels.com/photos/18069861/pexels-photo-18069861.png"
             alt="Abstract Art"
             className="h-full w-full object-cover"
@@ -87,7 +90,7 @@ export default function ForgotPasswordPage() {
             ) : (
               <div className="text-center">
                 <p className="text-sm text-zinc-500 mb-6">
-                  Didn't receive the email? Check your spam folder or try again.
+                  Didn&apos;t receive the email? Check your spam folder or try again.
                 </p>
                 <Button
                   variant="outline"

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { fetchJson } from "@/lib/fetcher";
 import { Logo } from "@/components/Logo";
+import Image from "next/image";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -50,7 +51,9 @@ export default function RegisterPage() {
     <main className="flex min-h-screen items-center justify-center bg-[#f3f4f6] p-4 md:p-8">
       <div className="flex w-full max-w-6xl overflow-hidden rounded-[2.5rem] bg-white p-4 shadow-xl md:p-6 lg:h-[85vh]">
         <div className="relative hidden w-1/2 overflow-hidden rounded-4xl lg:block">
-          <img
+          <Image
+            width={1920}
+            height={1080}
             src="https://images.pexels.com/photos/34165092/pexels-photo-34165092.png"
             alt="Abstract Art"
             className="h-full w-full object-cover"

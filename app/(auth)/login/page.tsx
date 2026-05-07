@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, ArrowRight } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -11,6 +11,7 @@ import { fetchJson } from "@/lib/fetcher";
 import { Logo } from "@/components/Logo";
 
 import { useEffect } from "react";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,7 +29,6 @@ export default function LoginPage() {
       setPassword(savedPassword);
       setRememberMe(true);
     } else {
-      // Set default values if nothing is saved
       setEmail("demo@paysense.in");
       setPassword("demo123");
     }
@@ -71,7 +71,9 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-[#f3f4f6] p-4 md:p-8">
       <div className="flex w-full max-w-6xl overflow-hidden rounded-[2.5rem] bg-white p-4 shadow-xl md:p-6 lg:h-[85vh]">
         <div className="relative hidden w-1/2 overflow-hidden rounded-4xl lg:block">
-          <img
+          <Image
+            width={1920}
+            height={1080}
             src="https://images.pexels.com/photos/18069861/pexels-photo-18069861.png"
             alt="Abstract Art"
             className="h-full w-full object-cover"
@@ -110,7 +112,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   required
-                  className="h-12 rounded-full border-zinc-200 bg-zinc-50 px-6 focus:border-primary focus:ring-primary/20"
+                  className="h-12 rounded-full border-zinc-200 bg-zinc-50 px-6 focus:border-primary focus:ring-primary/20 mt-2"
                 />
               </div>
 
