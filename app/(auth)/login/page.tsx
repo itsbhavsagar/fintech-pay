@@ -42,38 +42,40 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#f3f4f6] p-4 md:p-8">
-
       <div className="flex w-full max-w-6xl overflow-hidden rounded-[2.5rem] bg-white p-4 shadow-xl md:p-6 lg:h-[85vh]">
-        
-
         <div className="relative hidden w-1/2 overflow-hidden rounded-4xl lg:block">
-          <img 
-            src="https://images.pexels.com/photos/18069861/pexels-photo-18069861.png" 
-            alt="Abstract Art" 
+          <img
+            src="https://images.pexels.com/photos/18069861/pexels-photo-18069861.png"
+            alt="Abstract Art"
             className="h-full w-full object-cover"
           />
-      
+
           <div className="absolute inset-0 bg-black/5" />
         </div>
 
-
         <div className="flex w-full flex-col items-center justify-center px-4 py-8 md:px-12 lg:w-1/2">
           <div className="w-full max-w-md space-y-8">
-            
-            
             <div className="flex flex-col items-center space-y-3 text-center">
               <div className="mb-2 flex items-center gap-2">
                 <Logo />
-                <span className="text-4xl font-bold tracking-tight text-zinc-900">PaySense</span>
+                <span className="text-4xl font-bold tracking-tight text-zinc-800">
+                  PaySense
+                </span>
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-zinc-900">Welcome Back! </h1>
+              <h1 className="text-xl font-bold tracking-tight text-zinc-700">
+                Welcome Back!{" "}
+              </h1>
               <p className="text-sm text-zinc-500">Login to your account</p>
             </div>
 
-
             <form className="space-y-5" onSubmit={handleSubmit}>
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-zinc-700">Email</Label>
+                <Label
+                  htmlFor="email"
+                  className="text-sm font-medium text-zinc-700"
+                >
+                  Email
+                </Label>
                 <Input
                   id="email"
                   type="email"
@@ -87,7 +89,13 @@ export default function LoginPage() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" title="Password" className="text-sm font-medium text-zinc-700">Password</Label>
+                  <Label
+                    htmlFor="password"
+                    title="Password"
+                    className="text-sm font-medium text-zinc-700"
+                  >
+                    Password
+                  </Label>
                 </div>
                 <Input
                   id="password"
@@ -100,42 +108,40 @@ export default function LoginPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-between px-1">
-                <label className="flex items-center gap-2 text-sm text-zinc-500 cursor-pointer">
-                  <input type="checkbox" className="rounded border-zinc-300 text-primary focus:ring-primary" />
-                  Remember login
-                </label>
-                <Link href="#" className="text-sm font-semibold text-primary hover:underline">
-                  Forgot Password?
-                </Link>
-              </div>
-
               {error ? (
-                <p className="text-center text-sm font-medium text-destructive">{error}</p>
+                <p className="text-center text-sm font-medium text-destructive">
+                  {error}
+                </p>
               ) : null}
 
-              <Button className="w-full h-12 rounded-full bg-primary text-base font-semibold transition-all hover:opacity-90" type="submit" disabled={loading}>
-                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              <Button
+                className="w-full h-12 rounded-full bg-primary text-base font-semibold transition-all hover:opacity-90"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
                 Login
               </Button>
             </form>
 
-  
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-zinc-100" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-4 text-zinc-400">Or continue with</span>
+                <span className="bg-white px-4 text-zinc-400">
+                  Or continue with
+                </span>
               </div>
             </div>
-
-
-
-
             <p className="text-center text-sm text-zinc-500">
               New here?{" "}
-              <Link href="/register" className="font-bold text-primary hover:underline">
+              <Link
+                href="/register"
+                className="font-bold text-primary hover:underline"
+              >
                 Create account
               </Link>
             </p>

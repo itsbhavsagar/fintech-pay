@@ -37,44 +37,52 @@ export default function RegisterPage() {
       router.push("/");
       router.refresh();
     } catch (caughtError: unknown) {
-      setError(caughtError instanceof Error ? caughtError.message : "Registration failed");
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Registration failed",
+      );
       setLoading(false);
     }
   }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#f3f4f6] p-4 md:p-8">
-
       <div className="flex w-full max-w-6xl overflow-hidden rounded-[2.5rem] bg-white p-4 shadow-xl md:p-6 lg:h-[85vh]">
-        
-
         <div className="relative hidden w-1/2 overflow-hidden rounded-4xl lg:block">
-          <img 
-            src="https://images.pexels.com/photos/34165092/pexels-photo-34165092.png" 
-            alt="Abstract Art" 
+          <img
+            src="https://images.pexels.com/photos/34165092/pexels-photo-34165092.png"
+            alt="Abstract Art"
             className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-black/5" />
         </div>
 
-
         <div className="flex w-full flex-col items-center justify-center px-4 py-8 md:px-12 lg:w-1/2">
           <div className="w-full max-w-md space-y-6">
-            
-        
             <div className="flex flex-col items-center space-y-3 text-center">
               <div className="mb-2 flex items-center gap-2">
                 <Logo />
-                <span className="text-4xl font-bold tracking-tight text-zinc-900">PaySense</span>
+                <span className="text-4xl font-bold tracking-tight text-zinc-900">
+                  PaySense
+                </span>
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-zinc-900">Create your account</h1>
-              <p className="text-sm text-zinc-500">Join PaySense and start managing your payments</p>
+              <h1 className="text-xl font-bold tracking-tight text-zinc-900">
+                Create your account
+              </h1>
+              <p className="text-sm text-zinc-500">
+                Join PaySense and start managing your payments
+              </p>
             </div>
-
 
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div className="space-y-1.5">
-                <Label htmlFor="name" className="text-sm font-medium text-zinc-700 ml-1">Name</Label>
+                <Label
+                  htmlFor="name"
+                  className="text-sm font-medium text-zinc-700 ml-1"
+                >
+                  Name
+                </Label>
                 <Input
                   id="name"
                   placeholder="Enter your name"
@@ -86,7 +94,12 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="businessName" className="text-sm font-medium text-zinc-700 ml-1">Business Name</Label>
+                <Label
+                  htmlFor="businessName"
+                  className="text-sm font-medium text-zinc-700 ml-1"
+                >
+                  Business Name
+                </Label>
                 <Input
                   id="businessName"
                   placeholder="Enter your business name"
@@ -98,7 +111,12 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-sm font-medium text-zinc-700 ml-1">Email</Label>
+                <Label
+                  htmlFor="email"
+                  className="text-sm font-medium text-zinc-700 ml-1"
+                >
+                  Email
+                </Label>
                 <Input
                   id="email"
                   type="email"
@@ -111,7 +129,13 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="password" title="Password" className="text-sm font-medium text-zinc-700 ml-1">Password</Label>
+                <Label
+                  htmlFor="password"
+                  title="Password"
+                  className="text-sm font-medium text-zinc-700 ml-1"
+                >
+                  Password
+                </Label>
                 <Input
                   id="password"
                   type="password"
@@ -124,19 +148,29 @@ export default function RegisterPage() {
               </div>
 
               {error ? (
-                <p className="text-center text-sm font-medium text-destructive">{error}</p>
+                <p className="text-center text-sm font-medium text-destructive">
+                  {error}
+                </p>
               ) : null}
 
-              <Button className="w-full h-11 rounded-full bg-primary text-base font-semibold transition-all hover:opacity-90 mt-2" type="submit" disabled={loading}>
-                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              <Button
+                className="w-full h-11 rounded-full bg-primary text-base font-semibold transition-all hover:opacity-90 mt-2"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
                 Create account
               </Button>
             </form>
 
-            
             <p className="text-center text-sm text-zinc-500">
               Already have an account?{" "}
-              <Link href="/login" className="font-bold text-primary hover:underline">
+              <Link
+                href="/login"
+                className="font-bold text-primary hover:underline"
+              >
                 Sign in
               </Link>
             </p>
