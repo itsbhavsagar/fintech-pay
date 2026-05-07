@@ -9,7 +9,6 @@ export const dynamic = "force-dynamic";
 export async function GET(): Promise<NextResponse> {
   try {
     const user = await requireSessionUser();
-    
     const getFilters = unstable_cache(
       async (uid: string) => {
         const [currencies, statuses] = await Promise.all([
@@ -31,7 +30,7 @@ export async function GET(): Promise<NextResponse> {
       ["transaction-filters"],
       { revalidate: 300, tags: [`transaction-filters-${user.id}`] }
     );
-
+    
     const filters = await getFilters(user.id);
 
     return NextResponse.json(filters, {

@@ -1,14 +1,14 @@
 "use client";
 
-import { Loader2, WalletCards } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { fetchJson } from "@/lib/fetcher";
+import { Logo } from "@/components/Logo";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -38,62 +38,111 @@ export default function RegisterPage() {
       router.refresh();
     } catch (caughtError: unknown) {
       setError(caughtError instanceof Error ? caughtError.message : "Registration failed");
-    } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-secondary px-4 py-10">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-4">
-          <div className="flex size-11 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <WalletCards className="size-6" />
+    <main className="flex min-h-screen items-center justify-center bg-[#f3f4f6] p-4 md:p-8">
+
+      <div className="flex w-full max-w-6xl overflow-hidden rounded-[2.5rem] bg-white p-4 shadow-xl md:p-6 lg:h-[85vh]">
+        
+
+        <div className="relative hidden w-1/2 overflow-hidden rounded-4xl lg:block">
+          <img 
+            src="https://images.pexels.com/photos/34165092/pexels-photo-34165092.png" 
+            alt="Abstract Art" 
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/5" />
+        </div>
+
+
+        <div className="flex w-full flex-col items-center justify-center px-4 py-8 md:px-12 lg:w-1/2">
+          <div className="w-full max-w-md space-y-6">
+            
+        
+            <div className="flex flex-col items-center space-y-3 text-center">
+              <div className="mb-2 flex items-center gap-2">
+                <Logo />
+                <span className="text-4xl font-bold tracking-tight text-zinc-900">PaySense</span>
+              </div>
+              <h1 className="text-xl font-bold tracking-tight text-zinc-900">Create your account</h1>
+              <p className="text-sm text-zinc-500">Join PaySense and start managing your payments</p>
+            </div>
+
+
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <div className="space-y-1.5">
+                <Label htmlFor="name" className="text-sm font-medium text-zinc-700 ml-1">Name</Label>
+                <Input
+                  id="name"
+                  placeholder="Enter your name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  required
+                  className="h-11 rounded-full border-zinc-200 bg-zinc-50 px-6 focus:border-primary focus:ring-primary/20"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="businessName" className="text-sm font-medium text-zinc-700 ml-1">Business Name</Label>
+                <Input
+                  id="businessName"
+                  placeholder="Enter your business name"
+                  value={businessName}
+                  onChange={(event) => setBusinessName(event.target.value)}
+                  required
+                  className="h-11 rounded-full border-zinc-200 bg-zinc-50 px-6 focus:border-primary focus:ring-primary/20"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-sm font-medium text-zinc-700 ml-1">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  required
+                  className="h-11 rounded-full border-zinc-200 bg-zinc-50 px-6 focus:border-primary focus:ring-primary/20"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="password" title="Password" className="text-sm font-medium text-zinc-700 ml-1">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Create a password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                  className="h-11 rounded-full border-zinc-200 bg-zinc-50 px-6 focus:border-primary focus:ring-primary/20"
+                />
+              </div>
+
+              {error ? (
+                <p className="text-center text-sm font-medium text-destructive">{error}</p>
+              ) : null}
+
+              <Button className="w-full h-11 rounded-full bg-primary text-base font-semibold transition-all hover:opacity-90 mt-2" type="submit" disabled={loading}>
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Create account
+              </Button>
+            </form>
+
+            
+            <p className="text-center text-sm text-zinc-500">
+              Already have an account?{" "}
+              <Link href="/login" className="font-bold text-primary hover:underline">
+                Sign in
+              </Link>
+            </p>
           </div>
-          <div>
-            <CardTitle className="text-2xl">Create a PaySense account</CardTitle>
-            <p className="mt-2 text-sm text-muted-foreground">Launch a merchant dashboard backed by your Neon database.</p>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" value={name} onChange={(event) => setName(event.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="businessName">Business name</Label>
-              <Input id="businessName" value={businessName} onChange={(event) => setBusinessName(event.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                minLength={6}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-              />
-            </div>
-            {error ? <p className="text-sm text-destructive">{error}</p> : null}
-            <Button className="w-full" type="submit" disabled={loading}>
-              {loading ? <Loader2 className="size-4 animate-spin" /> : null}
-              Register
-            </Button>
-          </form>
-          <p className="mt-5 text-center text-sm text-muted-foreground">
-            Already registered?{" "}
-            <Link href="/login" className="font-medium text-primary">
-              Sign in
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </main>
   );
 }

@@ -28,8 +28,10 @@ function buildTransactionsUrl(
 
   if (cursor) params.set("cursor", cursor);
   if (filters.search?.trim()) params.set("search", filters.search.trim());
-  if (filters.status && filters.status !== "all") params.set("status", filters.status);
-  if (filters.currency && filters.currency !== "all") params.set("currency", filters.currency);
+  if (filters.status && filters.status !== "all")
+    params.set("status", filters.status);
+  if (filters.currency && filters.currency !== "all")
+    params.set("currency", filters.currency);
   if (filters.from) params.set("from", filters.from);
   if (filters.to) params.set("to", filters.to);
 
@@ -71,8 +73,8 @@ export function useTransactions(filters: TransactionFilters) {
     getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
 
     placeholderData: keepPreviousData,
-    staleTime: 60000,        // ← Important
-    gcTime: 300000,          // ← Important (cache longer)
+    staleTime: 60000,
+    gcTime: 300000,
   });
 }
 

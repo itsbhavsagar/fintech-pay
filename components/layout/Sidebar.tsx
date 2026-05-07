@@ -9,13 +9,11 @@ import {
   Settings,
   Landmark,
   Zap,
-  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
-import { useExchangeRates } from "@/hooks/useExchangeRates";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: Home },
@@ -30,7 +28,6 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { data: ratesData, isLoading: isRatesLoading } = useExchangeRates();
 
   return (
     <aside className="hidden h-screen w-64 shrink-0 border-r bg-card lg:sticky lg:top-0 lg:flex lg:flex-col">
@@ -65,32 +62,6 @@ export function Sidebar() {
       </nav>
 
       <div className="mt-auto border-t bg-muted/10 p-4 space-y-4">
-        <div className="flex flex-col gap-1.5 px-1">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Live Rates (USD Base)</p>
-          <div className="text-xs bg-secondary/30 rounded-md py-2 px-2.5 border border-border/50">
-            {isRatesLoading ? (
-              <Loader2 className="size-3 animate-spin text-muted-foreground" />
-            ) : ratesData ? (
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                  <span className="text-[9px] text-muted-foreground font-semibold">EUR</span>
-                  <span className="font-mono font-medium tracking-tight text-foreground">{ratesData.rates.EUR?.toFixed(2)}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[9px] text-muted-foreground font-semibold">GBP</span>
-                  <span className="font-mono font-medium tracking-tight text-foreground">{ratesData.rates.GBP?.toFixed(2)}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[9px] text-muted-foreground font-semibold">INR</span>
-                  <span className="font-mono font-medium tracking-tight text-foreground">{ratesData.rates.INR?.toFixed(2)}</span>
-                </div>
-              </div>
-            ) : (
-              <span className="text-muted-foreground">Unavailable</span>
-            )}
-          </div>
-        </div>
-
         <div className="rounded-xl border bg-card p-3 shadow-sm overflow-hidden relative">
           <div className="absolute inset-y-0 left-0 w-8 bg-linear-to-r from-card to-transparent z-10" />
           <div className="absolute inset-y-0 right-0 w-8 bg-linear-to-l from-card to-transparent z-10" />

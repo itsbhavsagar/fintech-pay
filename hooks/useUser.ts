@@ -11,8 +11,9 @@ type MeResponse = {
 export function useUser(initialData?: UserDto) {
   return useQuery({
     queryKey: ["me"],
-    queryFn: () => fetchJson<MeResponse>("/api/auth/me").then(res => res.user),
+    queryFn: () =>
+      fetchJson<MeResponse>("/api/auth/me").then((res) => res.user),
     initialData: initialData,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 }
