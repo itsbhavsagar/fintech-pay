@@ -35,7 +35,7 @@ export function Sidebar() {
         <Logo />
         <div>
           <p className="text-sm font-semibold leading-none">PaySense</p>
-          <p className="mt-1 text-xs text-muted-foreground">Merchant payments</p>
+          <p className="mt-1 text-xs text-muted-foreground">Merchant Dashboard</p>
         </div>
       </div>
 
@@ -65,12 +65,12 @@ export function Sidebar() {
         <div className="rounded-xl border bg-card p-3 shadow-sm overflow-hidden relative">
           <div className="absolute inset-y-0 left-0 w-8 bg-linear-to-r from-card to-transparent z-10" />
           <div className="absolute inset-y-0 right-0 w-8 bg-linear-to-l from-card to-transparent z-10" />
-          
+
           <p className="text-xs font-semibold text-foreground relative z-20"> Accepted Payments </p>
           <p className="mt-0.5 text-[10px] text-muted-foreground leading-relaxed relative z-20">
             Largest Selection Of Payment Methods.
           </p>
-          
+
           <div className="mt-3 overflow-hidden">
             <div className="flex w-max animate-marquee gap-2">
               {[1, 2].map((group) => (
