@@ -5,6 +5,12 @@ type RetryOptions = {
   delayMs?: number;
 };
 
+
+export const neonDatabaseRetryOptions: RetryOptions = {
+  attempts: 4,
+  delayMs: 2000,
+};
+
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);

@@ -8,7 +8,7 @@ import {
   verifyPassword,
 } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { withDatabaseRetry } from "@/lib/prisma-retry";
+import { withDatabaseRetry, neonDatabaseRetryOptions } from "@/lib/prisma-retry";
 
 const loginSchema = z.object({
   email: z.string().email().max(120).transform((value) => value.toLowerCase()),
@@ -30,7 +30,7 @@ export async function POST(request: Request): Promise<NextResponse> {
             password: true,
           },
         }),
-      { attempts: 3, delayMs: 800 },
+      neonDatabaseRetryOptions,
     );
 
     if (!user) {

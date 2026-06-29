@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import type { Transaction } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { neonDatabaseRetryOptions, withDatabaseRetry } from "@/lib/prisma-retry";
 import { periodToDays } from "@/lib/utils";
 import type { AnalyticsDto, BreakdownPoint, DashboardStatsDto, PeakHourPoint, Period } from "@/types/domain";
 
@@ -161,7 +162,7 @@ export async function getAnalytics(userId: string, period: Period): Promise<Anal
     { revalidate: 300, tags: [`analytics-${userId}`] }
   );
 
-  return cachedFn(userId, period);
+  return withDatabaseRetry(() => cachedFn(userId, period), neonDatabaseRetryOptions);
 }
 
 export async function getDashboardStats(userId: string): Promise<DashboardStatsDto> {
@@ -212,5 +213,5 @@ export async function getDashboardStats(userId: string): Promise<DashboardStatsD
     { revalidate: 300, tags: [`dashboard-stats-${userId}`] }
   );
 
-  return cachedFn(userId);
+  return withDatabaseRetry(() => cachedFn(userId), neonDatabaseRetryOptions);
 }

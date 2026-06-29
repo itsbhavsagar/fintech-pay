@@ -1,7 +1,8 @@
-import { Button, type ButtonProps } from "@/components/ui/button";
+import type { ComponentProps } from "react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type AuthSubmitButtonProps = ButtonProps & {
+type AuthSubmitButtonProps = ComponentProps<typeof Button> & {
   loading?: boolean;
   loadingLabel?: string;
 };
