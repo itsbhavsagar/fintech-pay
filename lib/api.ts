@@ -16,7 +16,7 @@ export function jsonError(error: unknown): NextResponse {
   if (isDatabaseConnectionError(error)) {
     return NextResponse.json(
       {
-        error: "Unable to reach the database. Check your connection and try again.",
+        error: "Service temporarily unavailable.",
         code: "DATABASE_UNAVAILABLE",
       },
       { status: 503 },

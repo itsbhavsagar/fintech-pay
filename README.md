@@ -53,3 +53,5 @@ npm run dev
 ```
 
 Needs `.env` with `DATABASE_URL`, `JWT_SECRET`, Razorpay test keys, and `GROQ_API_KEY` for the AI bits.
+
+If login shows a service error toast, your Postgres host may have changed — copy a fresh connection string from the Neon dashboard. Use the **pooled** URL (`-pooler` in the host) if direct fails, or direct if pooler fails.

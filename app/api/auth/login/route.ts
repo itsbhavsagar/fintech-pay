@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { jsonError, parseJsonBody } from "@/lib/api";
-import { setAuthCookie, signAuthToken, verifyPassword } from "@/lib/auth";
+import {
+  attachSessionCookie,
+  sessionUserSelect,
+  toSessionUser,
+  verifyPassword,
+} from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withDatabaseRetry } from "@/lib/prisma-retry";
 
 const loginSchema = z.object({
   email: z.string().email().max(120).transform((value) => value.toLowerCase()),
@@ -13,11 +19,19 @@ const loginSchema = z.object({
 export async function POST(request: Request): Promise<NextResponse> {
   try {
     const input = await parseJsonBody(request, loginSchema);
-    const user = await prisma.user.findUnique({
-      where: {
-        email: input.email,
-      },
-    });
+    const user = await withDatabaseRetry(
+      () =>
+        prisma.user.findUnique({
+          where: {
+            email: input.email,
+          },
+          select: {
+            ...sessionUserSelect,
+            password: true,
+          },
+        }),
+      { attempts: 3, delayMs: 800 },
+    );
 
     if (!user) {
       return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
@@ -29,19 +43,9 @@ export async function POST(request: Request): Promise<NextResponse> {
       return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
     }
 
-    const token = await signAuthToken(user);
-    const response = NextResponse.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        businessName: user.businessName,
-        apiKey: user.apiKey,
-        webhookUrl: user.webhookUrl,
-        createdAt: user.createdAt.toISOString(),
-      },
-    });
-    setAuthCookie(response, token, input.rememberMe);
+    const sessionUser = toSessionUser(user);
+    const response = NextResponse.json({ user: sessionUser });
+    await attachSessionCookie(response, sessionUser, input.rememberMe);
 
     return response;
   } catch (error: unknown) {

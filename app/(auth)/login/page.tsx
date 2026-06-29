@@ -1,23 +1,23 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { AuthSubmitButton } from "@/components/auth/AuthSubmitButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { fetchJson } from "@/lib/fetcher";
+import { resolveAuthError } from "@/lib/api-error";
 import { Logo } from "@/components/Logo";
 import { DEMO_EMAIL, PRODUCT_NAME } from "@/lib/brand";
 
-import { useEffect } from "react";
 import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(DEMO_EMAIL);
+  const [password, setPassword] = useState("demo123");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -29,9 +29,6 @@ export default function LoginPage() {
       setEmail(savedEmail);
       setPassword(savedPassword);
       setRememberMe(true);
-    } else {
-      setEmail(DEMO_EMAIL);
-      setPassword("demo123");
     }
   }, []);
 
@@ -58,12 +55,14 @@ export default function LoginPage() {
         localStorage.removeItem("rememberedPassword");
       }
 
-      router.push("/");
-      router.refresh();
+      router.replace("/");
     } catch (caughtError: unknown) {
-      setError(
-        caughtError instanceof Error ? caughtError.message : "Login failed",
-      );
+      const resolved = resolveAuthError(caughtError);
+      if (resolved.type === "toast") {
+        toast.error(resolved.message);
+      } else {
+        setError(resolved.message);
+      }
       setLoading(false);
     }
   }
@@ -164,16 +163,9 @@ export default function LoginPage() {
                 </p>
               ) : null}
 
-              <Button
-                className="w-full h-12 rounded-full bg-primary text-primary-foreground text-base font-semibold transition-all hover:opacity-90"
-                type="submit"
-                disabled={loading}
-              >
-                {loading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : null}
+              <AuthSubmitButton type="submit" loading={loading}>
                 Login
-              </Button>
+              </AuthSubmitButton>
             </form>
 
             <div className="relative">

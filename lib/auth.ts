@@ -1,14 +1,7 @@
 import { compare, hash } from "bcryptjs";
-import { jwtVerify, SignJWT } from "jose";
+import { jwtVerify, SignJWT, type JWTPayload } from "jose";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import {
-  DatabaseUnavailableError,
-  isDatabaseConnectionError,
-  toDatabaseUnavailableError,
-} from "@/lib/db-errors";
-import { prisma } from "@/lib/prisma";
-import { withDatabaseRetry } from "@/lib/prisma-retry";
 import type { UserDto } from "@/types/domain";
 
 import { AUTH_COOKIE_NAME } from "@/lib/brand";
@@ -16,12 +9,18 @@ import { AUTH_COOKIE_NAME } from "@/lib/brand";
 const authCookieName = AUTH_COOKIE_NAME;
 const tokenTtl = "7d";
 
-type TokenUser = {
+type SessionUser = UserDto;
+
+type SessionRow = {
   id: string;
   email: string;
+  name: string | null;
+  image: string | null;
+  businessName: string | null;
+  apiKey: string;
+  webhookUrl: string | null;
+  createdAt: Date;
 };
-
-type SessionUser = UserDto;
 
 export class AuthError extends Error {
   constructor(message = "Authentication required") {
@@ -40,6 +39,19 @@ function getJwtSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
+export function toSessionUser(user: SessionRow): SessionUser {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    image: user.image,
+    businessName: user.businessName,
+    apiKey: user.apiKey,
+    webhookUrl: user.webhookUrl,
+    createdAt: user.createdAt.toISOString(),
+  };
+}
+
 export async function hashPassword(password: string): Promise<string> {
   return hash(password, 12);
 }
@@ -48,8 +60,16 @@ export async function verifyPassword(password: string, passwordHash: string): Pr
   return compare(password, passwordHash);
 }
 
-export async function signAuthToken(user: TokenUser): Promise<string> {
-  return new SignJWT({ email: user.email })
+export async function signAuthToken(user: SessionUser): Promise<string> {
+  return new SignJWT({
+    email: user.email,
+    name: user.name,
+    image: user.image,
+    businessName: user.businessName,
+    apiKey: user.apiKey,
+    webhookUrl: user.webhookUrl,
+    createdAt: user.createdAt,
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
     .setIssuedAt()
@@ -57,25 +77,41 @@ export async function signAuthToken(user: TokenUser): Promise<string> {
     .sign(getJwtSecret());
 }
 
-export async function verifyAuthToken(token: string): Promise<TokenUser | null> {
+function sessionFromPayload(payload: JWTPayload): SessionUser | null {
+  if (typeof payload.sub !== "string" || typeof payload.email !== "string") {
+    return null;
+  }
+
+  if (typeof payload.apiKey !== "string" || typeof payload.createdAt !== "string") {
+    return null;
+  }
+
+  return {
+    id: payload.sub,
+    email: payload.email,
+    name: typeof payload.name === "string" ? payload.name : null,
+    image: typeof payload.image === "string" ? payload.image : null,
+    businessName: typeof payload.businessName === "string" ? payload.businessName : null,
+    apiKey: payload.apiKey,
+    webhookUrl: typeof payload.webhookUrl === "string" ? payload.webhookUrl : null,
+    createdAt: payload.createdAt,
+  };
+}
+
+export async function verifyAuthToken(token: string): Promise<SessionUser | null> {
   try {
     const { payload } = await jwtVerify(token, getJwtSecret());
-    const email = payload.email;
-
-    if (typeof payload.sub !== "string" || typeof email !== "string") {
-      return null;
-    }
-
-    return {
-      id: payload.sub,
-      email,
-    };
+    return sessionFromPayload(payload);
   } catch {
     return null;
   }
 }
 
-export function setAuthCookie(response: NextResponse, token: string, rememberMe: boolean = false): void {
+export function setAuthCookie(
+  response: NextResponse,
+  token: string,
+  rememberMe: boolean = false,
+): void {
   response.cookies.set(authCookieName, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -83,6 +119,15 @@ export function setAuthCookie(response: NextResponse, token: string, rememberMe:
     path: "/",
     ...(rememberMe ? { maxAge: 60 * 60 * 24 * 7 } : {}),
   });
+}
+
+export async function attachSessionCookie(
+  response: NextResponse,
+  user: SessionUser,
+  rememberMe: boolean = false,
+): Promise<void> {
+  const token = await signAuthToken(user);
+  setAuthCookie(response, token, rememberMe);
 }
 
 export function clearAuthCookie(response: NextResponse): void {
@@ -103,47 +148,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     return null;
   }
 
-  const verifiedToken = await verifyAuthToken(token);
-
-  if (!verifiedToken) {
-    return null;
-  }
-
-  let user;
-
-  try {
-    user = await withDatabaseRetry(() =>
-      prisma.user.findUnique({
-        where: {
-          id: verifiedToken.id,
-        },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          image: true,
-          businessName: true,
-          apiKey: true,
-          webhookUrl: true,
-          createdAt: true,
-        },
-      }),
-    );
-  } catch (error: unknown) {
-    if (isDatabaseConnectionError(error)) {
-      throw toDatabaseUnavailableError(error);
-    }
-    throw error;
-  }
-
-  if (!user) {
-    return null;
-  }
-
-  return {
-    ...user,
-    createdAt: user.createdAt.toISOString(),
-  };
+  return verifyAuthToken(token);
 }
 
 export async function requireSessionUser(): Promise<SessionUser> {
@@ -157,18 +162,17 @@ export async function requireSessionUser(): Promise<SessionUser> {
 }
 
 export async function requireSessionUserId(): Promise<string> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(authCookieName)?.value;
-
-  if (!token) {
-    throw new AuthError();
-  }
-
-  const verifiedToken = await verifyAuthToken(token);
-
-  if (!verifiedToken) {
-    throw new AuthError();
-  }
-
-  return verifiedToken.id;
+  const user = await requireSessionUser();
+  return user.id;
 }
+
+export const sessionUserSelect = {
+  id: true,
+  email: true,
+  name: true,
+  image: true,
+  businessName: true,
+  apiKey: true,
+  webhookUrl: true,
+  createdAt: true,
+} as const;

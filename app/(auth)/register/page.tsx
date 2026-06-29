@@ -1,13 +1,14 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { AuthSubmitButton } from "@/components/auth/AuthSubmitButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { fetchJson } from "@/lib/fetcher";
+import { resolveAuthError } from "@/lib/api-error";
 import { Logo } from "@/components/Logo";
 import { PRODUCT_NAME } from "@/lib/brand";
 import Image from "next/image";
@@ -36,14 +37,14 @@ export default function RegisterPage() {
           password,
         }),
       });
-      router.push("/");
-      router.refresh();
+      router.replace("/");
     } catch (caughtError: unknown) {
-      setError(
-        caughtError instanceof Error
-          ? caughtError.message
-          : "Registration failed",
-      );
+      const resolved = resolveAuthError(caughtError);
+      if (resolved.type === "toast") {
+        toast.error(resolved.message);
+      } else {
+        setError(resolved.message);
+      }
       setLoading(false);
     }
   }
@@ -157,16 +158,14 @@ export default function RegisterPage() {
                 </p>
               ) : null}
 
-              <Button
-                className="w-full h-11 rounded-full bg-primary text-primary-foreground text-base font-semibold transition-all hover:opacity-90 mt-2"
+              <AuthSubmitButton
                 type="submit"
-                disabled={loading}
+                loading={loading}
+                loadingLabel="Creating account"
+                className="mt-2 h-11"
               >
-                {loading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : null}
                 Create account
-              </Button>
+              </AuthSubmitButton>
             </form>
 
             <p className="text-center text-sm text-muted-foreground">

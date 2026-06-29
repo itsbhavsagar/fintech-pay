@@ -12,6 +12,25 @@ import { cn } from "@/lib/utils";
 
 const NUDGE_DELAY_MS = 1800;
 
+type ChatMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+};
+
+function renderMessageContent(content: string) {
+  return content.split(/(\*\*.*?\*\*)/g).map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={i} className="font-semibold text-foreground">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    return part;
+  });
+}
+
 export function FloatingAIAssistant() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -19,15 +38,25 @@ export function FloatingAIAssistant() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const [query, setQuery] = useState("");
-  const [submittedQuery, setSubmittedQuery] = useState("");
-  const [streamingResponse, setStreamingResponse] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [streamingResponse]);
+  }, [messages, isStreaming]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
 
   function dismissNudge() {
     setShowNudge(false);
@@ -64,17 +93,27 @@ export function FloatingAIAssistant() {
 
   function closePanel() {
     setIsOpen(false);
-    setSubmittedQuery("");
-    setStreamingResponse("");
+    setMessages([]);
     setQuery("");
+    setIsStreaming(false);
   }
 
   const handleQuerySubmit = async (questionText?: string) => {
     const prompt = (questionText ?? query).trim();
     if (!prompt || isStreaming) return;
 
-    setSubmittedQuery(prompt);
-    setStreamingResponse("");
+    const userMessage: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: prompt,
+    };
+    const assistantId = crypto.randomUUID();
+
+    setMessages((prev) => [
+      ...prev,
+      userMessage,
+      { id: assistantId, role: "assistant", content: "" },
+    ]);
     setIsStreaming(true);
     setQuery("");
 
@@ -107,35 +146,46 @@ export function FloatingAIAssistant() {
           if (parsed.error) throw new Error(parsed.error);
           if (parsed.token) {
             result += parsed.token;
-            setStreamingResponse(result);
+            setMessages((prev) =>
+              prev.map((message) =>
+                message.id === assistantId
+                  ? { ...message, content: result }
+                  : message,
+              ),
+            );
           }
           if (parsed.done) setIsStreaming(false);
         }
       }
     } catch (error) {
-      setStreamingResponse(
-        `Error: ${error instanceof Error ? error.message : "Failed to get response"}. Please try again.`,
+      const errorText = `Error: ${error instanceof Error ? error.message : "Failed to get response"}. Please try again.`;
+      setMessages((prev) =>
+        prev.map((message) =>
+          message.id === assistantId ? { ...message, content: errorText } : message,
+        ),
       );
       setIsStreaming(false);
     }
   };
+
+  const showEmptyState = messages.length === 0 && !isStreaming;
 
   return (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
       {showNudge && !isOpen ? (
         <div
           className={cn(
-            "relative w-[min(260px,calc(100vw-3rem))]",
+            "relative w-[min(280px,calc(100vw-3rem))]",
             "animate-in fade-in-0 slide-in-from-bottom-2 duration-300",
           )}
           role="status"
           aria-live="polite"
         >
-          <div className="rounded-xl border border-primary/20 bg-card p-3 shadow-lg">
+          <div className="rounded-xl border border-primary/20 bg-card p-3.5 shadow-lg">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-1.5">
-                <Sparkles className="size-3.5 shrink-0 text-primary" />
-                <p className="text-[11px] font-semibold">AI Assistant</p>
+                <Sparkles className="size-4 shrink-0 text-primary" />
+                <p className="text-sm font-semibold">AI Assistant</p>
               </div>
               <button
                 type="button"
@@ -143,16 +193,16 @@ export function FloatingAIAssistant() {
                 className="rounded-md p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 aria-label="Dismiss"
               >
-                <X className="size-3.5" />
+                <X className="size-4" />
               </button>
             </div>
-            <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
               Ask about revenue, failed payments, or anomalies — in plain English.
             </p>
             <Button
               type="button"
               size="sm"
-              className="mt-2 h-7 px-3 text-[11px]"
+              className="mt-2.5 h-8 px-3 text-sm"
               onClick={openAssistant}
             >
               Try it
@@ -168,41 +218,43 @@ export function FloatingAIAssistant() {
       {isOpen ? (
         <div
           className={cn(
-            "flex w-[min(360px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-primary/20 bg-card/95 shadow-2xl backdrop-blur-xl",
+            "flex w-[min(360px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-primary/20 bg-card shadow-2xl",
             "h-[min(480px,calc(100vh-7rem))] animate-in fade-in-0 slide-in-from-bottom-4 duration-200",
           )}
         >
-          <div className="flex items-center justify-between border-b bg-secondary/30 px-3 py-2">
-            <div className="flex min-w-0 items-center gap-1.5">
-              <Sparkles className="size-3.5 shrink-0 text-primary" />
-              <span className="truncate text-[11px] font-semibold text-foreground">
+          <div className="flex shrink-0 items-center justify-between border-b bg-secondary/30 px-3.5 py-2.5">
+            <div className="flex min-w-0 items-center gap-2">
+              <Sparkles className="size-4 shrink-0 text-primary" />
+              <span className="truncate text-sm font-semibold text-foreground">
                 Assistant
               </span>
-              <Badge variant="secondary" className="h-3.5 shrink-0 px-1 text-[8px] uppercase">
+              <Badge variant="secondary" className="h-4 shrink-0 px-1.5 text-[10px] uppercase">
                 Beta
               </Badge>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="size-7 shrink-0 rounded-md hover:bg-destructive/10 hover:text-destructive"
+              className="size-8 shrink-0 rounded-md hover:bg-destructive/10 hover:text-destructive"
               onClick={closePanel}
               aria-label="Close chat"
             >
-              <X className="size-3.5" />
+              <X className="size-4" />
             </Button>
           </div>
 
           <div
             ref={scrollRef}
             className={cn(
-              "flex-1 overflow-y-auto p-3 custom-scrollbar",
-              !submittedQuery && !isStreaming && "flex items-center justify-center",
+              "min-h-0 flex-1 overflow-y-auto overscroll-contain p-3.5 custom-scrollbar",
+              showEmptyState && "flex items-center justify-center",
             )}
+            onWheel={(event) => event.stopPropagation()}
+            onTouchMove={(event) => event.stopPropagation()}
           >
-            {!submittedQuery && !isStreaming ? (
-              <div className="w-full space-y-2 px-0.5">
-                <p className="text-[11px] text-muted-foreground">
+            {showEmptyState ? (
+              <div className="w-full space-y-2.5 px-0.5">
+                <p className="text-sm text-muted-foreground">
                   Ask about revenue, transactions, or payment links.
                 </p>
                 <AssistantSuggestions
@@ -212,34 +264,47 @@ export function FloatingAIAssistant() {
                 />
               </div>
             ) : (
-              <div className="space-y-2">
-                {submittedQuery ? (
-                  <div className="ml-4 rounded-lg rounded-tr-sm bg-primary px-2.5 py-1.5 text-primary-foreground">
-                    <p className="text-[11px] leading-relaxed">{submittedQuery}</p>
-                  </div>
-                ) : null}
-                <div className="mr-4 rounded-lg rounded-tl-sm border border-border/50 bg-secondary/50 px-2.5 py-1.5">
-                  <div className="text-[11px] leading-relaxed text-foreground/90 whitespace-pre-wrap">
-                    {streamingResponse.split(/(\*\*.*?\*\*)/g).map((part, i) => {
-                      if (part.startsWith("**") && part.endsWith("**")) {
-                        return (
-                          <strong key={i} className="font-bold text-foreground">
-                            {part.slice(2, -2)}
-                          </strong>
-                        );
-                      }
-                      return part;
-                    })}
-                    {isStreaming ? (
-                      <span className="ml-1 inline-block h-3 w-1 animate-pulse bg-primary align-middle" />
-                    ) : null}
-                  </div>
-                </div>
+              <div className="space-y-3">
+                {messages.map((message, index) => {
+                  const isLastAssistant =
+                    message.role === "assistant" &&
+                    index === messages.length - 1 &&
+                    isStreaming;
+
+                  if (message.role === "user") {
+                    return (
+                      <div
+                        key={message.id}
+                        className="ml-6 rounded-xl rounded-tr-sm bg-primary px-3 py-2 text-primary-foreground"
+                      >
+                        <p className="text-sm leading-relaxed">{message.content}</p>
+                      </div>
+                    );
+                  }
+
+                  if (!message.content && !isLastAssistant) {
+                    return null;
+                  }
+
+                  return (
+                    <div
+                      key={message.id}
+                      className="mr-6 rounded-xl rounded-tl-sm border border-border/50 bg-secondary/50 px-3 py-2"
+                    >
+                      <div className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
+                        {renderMessageContent(message.content)}
+                        {isLastAssistant ? (
+                          <span className="ml-1 inline-block h-4 w-1 animate-pulse bg-primary align-middle" />
+                        ) : null}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
 
-          <div className="border-t bg-secondary/20 p-2.5">
+          <div className="shrink-0 border-t bg-secondary/20 p-3">
             <div className="relative">
               <Input
                 placeholder="Type a message…"
@@ -251,20 +316,20 @@ export function FloatingAIAssistant() {
                     void handleQuerySubmit();
                   }
                 }}
-                className="h-9 rounded-lg border-primary/20 bg-card/50 pr-10 text-[11px]"
+                className="h-10 rounded-lg border-primary/20 bg-card pr-11 text-sm"
                 disabled={isStreaming}
               />
               <Button
                 onClick={() => void handleQuerySubmit()}
                 disabled={!query.trim() || isStreaming}
                 size="icon"
-                className="absolute right-1 top-1 size-7 rounded-md"
+                className="absolute right-1 top-1 size-8 rounded-md"
                 aria-label="Send message"
               >
                 {isStreaming ? (
-                  <Loader2 className="size-3.5 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  <Send className="size-3.5" />
+                  <Send className="size-4" />
                 )}
               </Button>
             </div>

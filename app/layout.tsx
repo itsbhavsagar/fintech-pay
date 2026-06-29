@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bricolage_Grotesque, Schibsted_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { PRODUCT_NAME } from "@/lib/brand";
 
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -12,8 +13,6 @@ const schibsted = Schibsted_Grotesk({
   subsets: ["latin"],
   variable: "--font-schibsted",
 });
-
-import { PRODUCT_NAME } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: PRODUCT_NAME,
@@ -32,6 +31,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
+        suppressHydrationWarning
         className={`${bricolage.variable} ${schibsted.variable} min-h-screen bg-background font-sans text-foreground antialiased`}
       >
         <Providers>{children}</Providers>

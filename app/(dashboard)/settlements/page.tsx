@@ -35,7 +35,7 @@ export default function SettlementsPage() {
         <SkeletonSettlementSummary />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          <Card className="bg-gradient-to-br from-primary/5 via-transparent to-transparent border-primary/10 relative overflow-hidden">
+          <Card className="bg-linear-to-br from-primary/5 via-transparent to-transparent border-primary/10 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
               <Landmark className="size-24" />
             </div>
@@ -52,7 +52,7 @@ export default function SettlementsPage() {
               <p className="text-xs text-muted-foreground">Across unsettled records</p>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-br from-muted/50 to-transparent relative overflow-hidden">
+          <Card className="bg-linear-to-br from-muted/50 to-transparent relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
               <CalendarDays className="size-24" />
             </div>

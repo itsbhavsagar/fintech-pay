@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { hashPassword, setAuthCookie, signAuthToken } from "@/lib/auth";
+import {
+  attachSessionCookie,
+  hashPassword,
+  sessionUserSelect,
+  toSessionUser,
+} from "@/lib/auth";
 import { jsonError, parseJsonBody } from "@/lib/api";
 import { prisma } from "@/lib/prisma";
 
@@ -27,35 +32,21 @@ export async function POST(request: Request): Promise<NextResponse> {
       return NextResponse.json({ error: "An account already exists for this email." }, { status: 409 });
     }
 
+    const passwordHash = await hashPassword(input.password);
+
     const user = await prisma.user.create({
       data: {
         name: input.name,
         email: input.email,
         businessName: input.businessName,
-        password: await hashPassword(input.password),
+        password: passwordHash,
       },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        businessName: true,
-        apiKey: true,
-        webhookUrl: true,
-        createdAt: true,
-      },
+      select: sessionUserSelect,
     });
 
-    const token = await signAuthToken(user);
-    const response = NextResponse.json(
-      {
-        user: {
-          ...user,
-          createdAt: user.createdAt.toISOString(),
-        },
-      },
-      { status: 201 },
-    );
-    setAuthCookie(response, token);
+    const sessionUser = toSessionUser(user);
+    const response = NextResponse.json({ user: sessionUser }, { status: 201 });
+    await attachSessionCookie(response, sessionUser);
 
     return response;
   } catch (error: unknown) {

@@ -1,7 +1,12 @@
 import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
 import { jsonError } from "@/lib/api";
-import { requireSessionUser } from "@/lib/auth";
+import {
+  attachSessionCookie,
+  requireSessionUser,
+  sessionUserSelect,
+  toSessionUser,
+} from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 function generateApiKey(): string {
@@ -18,14 +23,16 @@ export async function POST(): Promise<NextResponse> {
       data: {
         apiKey: generateApiKey(),
       },
-      select: {
-        apiKey: true,
-      },
+      select: sessionUserSelect,
     });
 
-    return NextResponse.json({
+    const sessionUser = toSessionUser(updatedUser);
+    const response = NextResponse.json({
       apiKey: updatedUser.apiKey,
     });
+    await attachSessionCookie(response, sessionUser);
+
+    return response;
   } catch (error: unknown) {
     return jsonError(error);
   }
