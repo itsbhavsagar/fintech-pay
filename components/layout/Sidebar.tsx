@@ -11,6 +11,7 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,25 @@ const navItems = [
   { href: "/settlements", label: "Settlements", icon: Landmark },
   { href: "/ai-assistant", label: "AI Assistant", icon: Bot },
   { href: "/settings", label: "Settings", icon: Settings },
+] as const;
+
+const paymentIcons = [
+  {
+    src: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/visa.svg",
+    alt: "Visa",
+  },
+  {
+    src: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/mastercard.svg",
+    alt: "Mastercard",
+  },
+  {
+    src: "https://www.vectorlogo.zone/logos/upi/upi-ar21.svg",
+    alt: "UPI",
+  },
+  {
+    src: "https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/americanexpress.svg",
+    alt: "Amex",
+  },
 ] as const;
 
 export function Sidebar() {
@@ -75,34 +95,21 @@ export function Sidebar() {
             <div className="flex w-max animate-marquee gap-2">
               {[1, 2].map((group) => (
                 <div key={group} className="flex gap-2 shrink-0">
-                  <div className="flex h-6 w-10 items-center justify-center rounded bg-white px-1 shadow-sm ring-1 ring-border/50 shrink-0">
-                    <img
-                      src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/visa.svg"
-                      alt="Visa"
-                      className="h-full w-full object-contain opacity-80"
-                    />
-                  </div>
-                  <div className="flex h-6 w-10 items-center justify-center rounded bg-white px-1 shadow-sm ring-1 ring-border/50 shrink-0">
-                    <img
-                      src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/mastercard.svg"
-                      alt="Mastercard"
-                      className="h-full w-full object-contain opacity-80"
-                    />
-                  </div>
-                  <div className="flex h-6 w-10 items-center justify-center rounded bg-white px-1 shadow-sm ring-1 ring-border/50 shrink-0">
-                    <img
-                      src="https://www.vectorlogo.zone/logos/upi/upi-ar21.svg"
-                      alt="UPI"
-                      className="h-full w-full object-contain opacity-80"
-                    />
-                  </div>
-                  <div className="flex h-6 w-10 items-center justify-center rounded bg-white px-1 shadow-sm ring-1 ring-border/50 shrink-0">
-                    <img
-                      src="https://cdn.jsdelivr.net/npm/simple-icons@v11/icons/americanexpress.svg"
-                      alt="Amex"
-                      className="h-full w-full object-contain opacity-80"
-                    />
-                  </div>
+                  {paymentIcons.map((icon) => (
+                    <div
+                      key={`${group}-${icon.alt}`}
+                      className="flex h-6 w-10 items-center justify-center rounded bg-white px-1 shadow-sm ring-1 ring-border/50 shrink-0"
+                    >
+                      <Image
+                        src={icon.src}
+                        alt={icon.alt}
+                        width={40}
+                        height={24}
+                        unoptimized
+                        className="h-full w-full object-contain opacity-80"
+                      />
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>

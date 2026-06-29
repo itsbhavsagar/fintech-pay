@@ -10,15 +10,22 @@ export function FloatingAIAssistant() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [position, setPosition] = useState({ x: -1, y: -1 });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [dragStart, setDragStart] = useState({
+    mouseX: 0,
+    mouseY: 0,
+    offsetX: 0,
+    offsetY: 0,
+  });
   const [hasMoved, setHasMoved] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (position.x === -1 && typeof window !== "undefined") {
       const width = containerRef.current?.offsetWidth ?? 200;
       setPosition({
         x: (window.innerWidth - width) / 2,
-        y: window.innerHeight - 80
+        y: window.innerHeight - 80,
       });
     }
   }, [position.x]);
@@ -27,15 +34,15 @@ export function FloatingAIAssistant() {
   const [submittedQuery, setSubmittedQuery] = useState("");
   const [streamingResponse, setStreamingResponse] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const onMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
     setHasMoved(false);
     setDragStart({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      offsetX: e.clientX - position.x,
+      offsetY: e.clientY - position.y,
     });
   };
 
@@ -43,8 +50,8 @@ export function FloatingAIAssistant() {
     const onMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
       
-      const deltaX = Math.abs(e.clientX - (dragStart.x + position.x));
-      const deltaY = Math.abs(e.clientY - (dragStart.y + position.y));
+      const deltaX = Math.abs(e.clientX - dragStart.mouseX);
+      const deltaY = Math.abs(e.clientY - dragStart.mouseY);
       
       if (deltaX > 5 || deltaY > 5) {
         setHasMoved(true);
@@ -55,8 +62,8 @@ export function FloatingAIAssistant() {
       const height = rect?.height ?? 50;
       
       const padding = 16;
-      const newX = e.clientX - dragStart.x;
-      const newY = e.clientY - dragStart.y;
+      const newX = e.clientX - dragStart.offsetX;
+      const newY = e.clientY - dragStart.offsetY;
       
       const minX = padding;
       const maxX = window.innerWidth - width - padding;
@@ -65,7 +72,7 @@ export function FloatingAIAssistant() {
 
       setPosition({
         x: Math.max(minX, Math.min(maxX, newX)),
-        y: Math.max(minY, Math.min(maxY, newY))
+        y: Math.max(minY, Math.min(maxY, newY)),
       });
     };
 

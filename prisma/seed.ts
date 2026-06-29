@@ -116,11 +116,17 @@ function moneyBetween(min: number, max: number): number {
   return Number((min + random() * (max - min)).toFixed(2));
 }
 
-function createStatusPool(): TransactionStatus[] {
+const transactionCount = 380;
+
+function createStatusPool(count: number): TransactionStatus[] {
+  const successCount = Math.round(count * 0.85);
+  const failedCount = Math.round(count * 0.1);
+  const pendingCount = count - successCount - failedCount;
+
   return [
-    ...Array<TransactionStatus>(170).fill("success"),
-    ...Array<TransactionStatus>(20).fill("failed"),
-    ...Array<TransactionStatus>(10).fill("pending"),
+    ...Array<TransactionStatus>(successCount).fill("success"),
+    ...Array<TransactionStatus>(failedCount).fill("failed"),
+    ...Array<TransactionStatus>(pendingCount).fill("pending"),
   ].sort(() => random() - 0.5);
 }
 
@@ -136,23 +142,129 @@ function paymentMethodForCountry(country: Country): PaymentMethod {
   return pickOne(["card", "card", "wallet", "netbanking"]);
 }
 
-function createdAtWithinLast90Days(): Date {
-  const daysAgo = Math.floor(random() * 90);
-  const minutesAgo = Math.floor(random() * 24 * 60);
+const businessHourWeights: readonly number[] = [
+  1, 1, 1, 1, 1, 1, 2, 4, 8, 12, 14, 15, 13, 11, 14, 15, 14, 12, 9, 6, 4, 3, 2, 1,
+];
 
-  return new Date(Date.now() - daysAgo * dayInMs - minutesAgo * 60 * 1000);
+function pickWeightedHour(): number {
+  const total = businessHourWeights.reduce((sum, weight) => sum + weight, 0);
+  let roll = random() * total;
+
+  for (let hour = 0; hour < businessHourWeights.length; hour += 1) {
+    roll -= businessHourWeights[hour] ?? 0;
+    if (roll <= 0) {
+      return hour;
+    }
+  }
+
+  return 12;
+}
+
+function dailyTransactionCount(daysAgo: number, dayOfWeek: number): number {
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const baseMin = isWeekend ? 1 : 3;
+  const baseMax = isWeekend ? 4 : 8;
+  let count = baseMin + Math.floor(random() * (baseMax - baseMin + 1));
+
+  if (daysAgo < 7) {
+    count += 2 + Math.floor(random() * 3);
+  } else if (daysAgo < 30) {
+    count += 1 + Math.floor(random() * 2);
+  }
+
+  if (daysAgo === 0) {
+    count = Math.max(count, 6);
+  }
+
+  return count;
+}
+
+function buildTransactionTimestamps(targetCount: number): Date[] {
+  const timestamps: Date[] = [];
+  const today = new Date();
+  const startOfToday = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
+  );
+
+  for (let daysAgo = 89; daysAgo >= 0; daysAgo -= 1) {
+    const dayStart = new Date(startOfToday.getTime() - daysAgo * dayInMs);
+    const dayOfWeek = dayStart.getUTCDay();
+    const count = dailyTransactionCount(daysAgo, dayOfWeek);
+
+    for (let index = 0; index < count; index += 1) {
+      const hour = pickWeightedHour();
+      const minute = Math.floor(random() * 60);
+      const second = Math.floor(random() * 60);
+
+      timestamps.push(
+        new Date(
+          Date.UTC(
+            dayStart.getUTCFullYear(),
+            dayStart.getUTCMonth(),
+            dayStart.getUTCDate(),
+            hour,
+            minute,
+            second,
+          ),
+        ),
+      );
+    }
+  }
+
+  timestamps.sort((left, right) => left.getTime() - right.getTime());
+
+  if (timestamps.length > targetCount) {
+    const step = timestamps.length / targetCount;
+    return Array.from({ length: targetCount }, (_, index) => {
+      const picked = timestamps[Math.floor(index * step)];
+      if (picked === undefined) {
+        throw new Error("Failed to sample transaction timestamps.");
+      }
+      return picked;
+    });
+  }
+
+  while (timestamps.length < targetCount) {
+    const daysAgo = Math.floor(Math.pow(random(), 1.5) * 30);
+    const dayStart = new Date(startOfToday.getTime() - daysAgo * dayInMs);
+    const hour = pickWeightedHour();
+    timestamps.push(
+      new Date(
+        Date.UTC(
+          dayStart.getUTCFullYear(),
+          dayStart.getUTCMonth(),
+          dayStart.getUTCDate(),
+          hour,
+          Math.floor(random() * 60),
+          Math.floor(random() * 60),
+        ),
+      ),
+    );
+  }
+
+  return timestamps.sort((left, right) => left.getTime() - right.getTime());
 }
 
 function buildTransactions(
   userId: string,
 ): Prisma.TransactionCreateManyInput[] {
-  const statusPool = createStatusPool();
+  const statusPool = createStatusPool(transactionCount);
+  const timestamps = buildTransactionTimestamps(transactionCount);
 
   return statusPool.map((status, index) => {
     const profile = pickOne(countryProfiles);
     const currency = pickOne(profile.currencies);
     const paymentMethod = paymentMethodForCountry(profile.country);
     const suffix = String(index + 1).padStart(4, "0");
+    const createdAt = timestamps[index];
+
+    if (createdAt === undefined) {
+      throw new Error(`Missing timestamp for transaction ${index + 1}.`);
+    }
+
+    const updatedAt = new Date(
+      createdAt.getTime() + Math.floor(random() * 15 * 60 * 1000),
+    );
 
     return {
       userId,
@@ -187,13 +299,16 @@ function buildTransactions(
 
       idempotencyKey: `idem_${userId}_${suffix}`,
 
-      retryCount: status === "failed" ? Math.floor(random() * 3) : 0,
-      lastRetryAt: status === "failed" ? new Date() : null,
+      retryCount: status === "failed" ? 1 + Math.floor(random() * 3) : 0,
+      lastRetryAt:
+        status === "failed"
+          ? new Date(createdAt.getTime() + Math.floor(random() * 2 * 60 * 60 * 1000))
+          : null,
 
       description: `${pickOne(descriptions)} - ${profile.country}`,
 
-      createdAt: createdAtWithinLast90Days(),
-      updatedAt: new Date(),
+      createdAt,
+      updatedAt,
     };
   });
 }
@@ -292,6 +407,28 @@ async function main(): Promise<void> {
   await prisma.settlement.createMany({
     data: buildSettlements(user.id),
   });
+
+  const latestTransaction = await prisma.transaction.findFirst({
+    where: { userId: user.id },
+    orderBy: { createdAt: "desc" },
+    select: { createdAt: true },
+  });
+
+  const earliestTransaction = await prisma.transaction.findFirst({
+    where: { userId: user.id },
+    orderBy: { createdAt: "asc" },
+    select: { createdAt: true },
+  });
+
+  console.log("Seed complete for demo@paysense.in");
+  console.log(`  Transactions: ${transactionCount}`);
+  console.log(`  Payment links: ${paymentLinkSeeds.length}`);
+  console.log(`  Settlements: 3`);
+  if (earliestTransaction && latestTransaction) {
+    console.log(
+      `  Date range: ${earliestTransaction.createdAt.toISOString().slice(0, 10)} → ${latestTransaction.createdAt.toISOString().slice(0, 10)}`,
+    );
+  }
 }
 
 main()

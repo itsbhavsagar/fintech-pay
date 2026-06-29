@@ -1,5 +1,5 @@
 {
-  "name": "paysense",
+  "name": "fintechpay",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,10 +10,10 @@
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "tsx prisma/seed.ts"
+    "prisma:seed": "tsx --env-file=.env prisma/seed.ts"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx --env-file=.env prisma/seed.ts"
   },
   "dependencies": {
     "@ai-sdk/groq": "^1.2.9",
