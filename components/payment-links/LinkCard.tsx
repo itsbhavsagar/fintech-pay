@@ -18,8 +18,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Switch } from "@/components/ui/switch";
+import { getLocalDateString } from "@/lib/date-range";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import type { PaymentLinkDto } from "@/types/domain";
+import type { PaymentLinkDto, DashboardStatsDto } from "@/types/domain";
 import Link from "next/link";
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -85,14 +86,14 @@ export function LinkCard({ paymentLink, onStatusChange, viewMode = "grid" }: Lin
           };
         });
         
-        queryClient.setQueriesData<any>({ queryKey: ["analytics"] }, (oldData: any) => {
-          if (!oldData || !oldData.stats) return oldData;
+        queryClient.setQueryData<DashboardStatsDto>(["dashboard-stats"], (oldData) => {
+          if (!oldData) return oldData;
           return {
             ...oldData,
-            stats: {
-              ...oldData.stats,
-              activePaymentLinks: Math.max(0, oldData.stats.activePaymentLinks + (newStatus === "active" ? 1 : -1))
-            }
+            activePaymentLinks: Math.max(
+              0,
+              oldData.activePaymentLinks + (newStatus === "active" ? 1 : -1),
+            ),
           };
         });
 
@@ -284,7 +285,7 @@ export function LinkCard({ paymentLink, onStatusChange, viewMode = "grid" }: Lin
             <Input
               id={`new-expiry-${paymentLink.id}`}
               type="date"
-              min={new Date().toISOString().split("T")[0]}
+              min={getLocalDateString()}
               value={newExpiryDate}
               onChange={(e) => setNewExpiryDate(e.target.value)}
             />

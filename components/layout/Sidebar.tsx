@@ -13,7 +13,10 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Logo } from "@/components/Logo";
+import { PRODUCT_NAME } from "@/lib/brand";
+import { prefetchDashboardRoute } from "@/lib/prefetch-dashboard";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -48,13 +51,14 @@ const paymentIcons = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const queryClient = useQueryClient();
 
   return (
     <aside className="hidden h-screen w-64 shrink-0 border-r bg-card lg:sticky lg:top-0 lg:flex lg:flex-col">
       <div className="flex h-16 items-center gap-3 border-b px-5">
         <Logo />
         <div>
-          <p className="text-sm font-semibold leading-none">PaySense</p>
+          <p className="text-sm font-semibold leading-none">{PRODUCT_NAME}</p>
           <p className="mt-1 text-xs text-muted-foreground">Merchant Dashboard</p>
         </div>
       </div>
@@ -69,6 +73,9 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              prefetch
+              onMouseEnter={() => prefetchDashboardRoute(queryClient, item.href)}
+              onFocus={() => prefetchDashboardRoute(queryClient, item.href)}
               className={cn(
                 "flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground",
                 isActive && "bg-accent text-accent-foreground font-semibold"
@@ -98,7 +105,7 @@ export function Sidebar() {
                   {paymentIcons.map((icon) => (
                     <div
                       key={`${group}-${icon.alt}`}
-                      className="flex h-6 w-10 items-center justify-center rounded bg-white px-1 shadow-sm ring-1 ring-border/50 shrink-0"
+                      className="flex h-6 w-10 items-center justify-center rounded border border-border/50 bg-white px-1 shadow-sm shrink-0"
                     >
                       <Image
                         src={icon.src}

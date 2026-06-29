@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidateUserDashboard } from "@/lib/cache";
 import { z } from "zod";
 import { jsonError, parseJsonBody } from "@/lib/api";
-import { requireSessionUser } from "@/lib/auth";
+import { requireSessionUser, requireSessionUserId } from "@/lib/auth";
 import { toPaymentLinkDto } from "@/lib/mappers";
 import { createPaymentLink } from "@/lib/payment-links";
 import { prisma } from "@/lib/prisma";
@@ -17,14 +17,19 @@ const createPaymentLinkSchema = z.object({
 
 export async function GET(request: Request): Promise<NextResponse> {
   try {
-    const user = await requireSessionUser();
+    const userId = await requireSessionUserId();
     const { searchParams } = new URL(request.url);
     const { limit, cursor } = getPaginationParams(request, 10);
     const search = searchParams.get("search");
     const status = searchParams.get("status");
     const month = searchParams.get("month");
 
-    const where: any = { userId: user.id };
+    const where: {
+      userId: string;
+      title?: { contains: string; mode: "insensitive" };
+      status?: string;
+      createdAt?: { gte: Date; lte?: Date; lt?: Date };
+    } = { userId };
 
     if (search) {
       where.title = { contains: search, mode: "insensitive" };
@@ -105,7 +110,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
     });
 
-    revalidateTag(`dashboard-stats-${user.id}`);
+    revalidateUserDashboard(user.id);
     return NextResponse.json({ paymentLink }, { status: 201 });
   } catch (error: unknown) {
     return jsonError(error);

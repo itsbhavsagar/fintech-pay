@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { fetchJson } from "@/lib/fetcher";
+import { QUERY_STALE_TIME } from "@/lib/query-config";
 import type { UserDto } from "@/types/domain";
 
 type MeResponse = {
@@ -13,7 +14,8 @@ export function useUser(initialData?: UserDto) {
     queryKey: ["me"],
     queryFn: () =>
       fetchJson<MeResponse>("/api/auth/me").then((res) => res.user),
-    initialData: initialData,
-    staleTime: 1000 * 60 * 5,
+    initialData,
+    staleTime: QUERY_STALE_TIME,
+    refetchOnMount: initialData ? false : true,
   });
 }

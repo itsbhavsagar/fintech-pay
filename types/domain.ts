@@ -2,7 +2,6 @@ export type TransactionStatus = "success" | "failed" | "pending";
 export type PaymentLinkStatus = "active" | "expired" | "paid";
 export type SettlementStatus = "pending" | "processing" | "settled";
 export type Period = "7d" | "30d" | "90d";
-export type ThemePreference = "light" | "dark" | "system";
 export type PaymentState =
   | "created"
   | "authorized"
@@ -107,11 +106,5 @@ export type ChatMessageDto = {
   id: string;
   role: "user" | "assistant";
   content: string;
-  createdAt: string;
-};
-
-export type AiSessionDto = {
-  id: string;
-  messages: ChatMessageDto[];
   createdAt: string;
 };

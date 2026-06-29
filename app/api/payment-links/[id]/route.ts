@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidateUserDashboard } from "@/lib/cache";
 import { z } from "zod";
 import { jsonError, parseJsonBody } from "@/lib/api";
 import { requireSessionUser } from "@/lib/auth";
@@ -51,7 +51,7 @@ export async function PATCH(
       },
     });
 
-    revalidateTag(`dashboard-stats-${user.id}`);
+    revalidateUserDashboard(user.id);
 
     return NextResponse.json({
       paymentLink: toPaymentLinkDto(updated),

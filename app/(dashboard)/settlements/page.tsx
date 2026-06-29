@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { formatCompactNumber, formatCurrency, formatDateTime } from "@/lib/utils";
 import { useSettlements } from "@/hooks/useSettlements";
 import { LoadMoreButton } from "@/components/shared/LoadMoreButton";
+import { SkeletonSettlementSummary } from "@/components/layout/ContentAreaLoader";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SettlementsPage() {
@@ -30,50 +31,46 @@ export default function SettlementsPage() {
         <p className="text-sm text-muted-foreground">Track pending, processing, and settled payouts.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card className="bg-gradient-to-br from-primary/5 via-transparent to-transparent border-primary/10 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-            <Landmark className="size-24" />
-          </div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Pending Payout</CardTitle>
-            <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <Landmark className="size-4 text-primary" />
+      {isInitialLoading ? (
+        <SkeletonSettlementSummary />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card className="bg-gradient-to-br from-primary/5 via-transparent to-transparent border-primary/10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+              <Landmark className="size-24" />
             </div>
-          </CardHeader>
-          <CardContent>
-            {isInitialLoading ? (
-              <Skeleton className="h-9 w-32 mb-1" />
-            ) : (
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Pending Payout</CardTitle>
+              <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <Landmark className="size-4 text-primary" />
+              </div>
+            </CardHeader>
+            <CardContent>
               <div className="text-3xl font-bold tracking-tight">
                 {formatCompactNumber(summary.pendingPayout)}
               </div>
-            )}
-            <p className="text-xs text-muted-foreground">Across unsettled records</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-gradient-to-br from-muted/50 to-transparent relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-            <CalendarDays className="size-24" />
-          </div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Next Settlement Date</CardTitle>
-            <div className="size-8 rounded-full bg-muted flex items-center justify-center">
-              <CalendarDays className="size-4 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Across unsettled records</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-gradient-to-br from-muted/50 to-transparent relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+              <CalendarDays className="size-24" />
             </div>
-          </CardHeader>
-          <CardContent>
-            {isInitialLoading ? (
-              <Skeleton className="h-9 w-48 mb-1" />
-            ) : (
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Next Settlement Date</CardTitle>
+              <div className="size-8 rounded-full bg-muted flex items-center justify-center">
+                <CalendarDays className="size-4 text-muted-foreground" />
+              </div>
+            </CardHeader>
+            <CardContent>
               <div className="text-3xl font-bold tracking-tight">
                 {formatDateTime(summary.nextSettlementDate)}
               </div>
-            )}
-            <p className="text-xs text-muted-foreground">Derived from the current payout cycle</p>
-          </CardContent>
-        </Card>
-      </div>
+              <p className="text-xs text-muted-foreground">Derived from the current payout cycle</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <Card>
         <CardContent className="p-0">

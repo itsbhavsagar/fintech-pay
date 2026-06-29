@@ -3,20 +3,17 @@
 import { CreateLinkModal } from "@/components/payment-links/CreateLinkModal";
 import { LinkCard } from "@/components/payment-links/LinkCard";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { FloatingAIAssistant } from "@/components/shared/FloatingAIAssistant";
-import { usePaymentLinks } from "@/hooks/usePaymentLinks";
+import { PaymentLinksContentLoader } from "@/components/layout/ContentAreaLoader";
+import { usePaymentLinks, DEFAULT_PAYMENT_LINK_FILTERS } from "@/hooks/usePaymentLinks";
 import { LoadMoreButton } from "@/components/shared/LoadMoreButton";
-import { Search, Filter, Plus, LayoutGrid, List as ListIcon, MoreHorizontal, ExternalLink, Copy, Loader2 } from "lucide-react";
+import { ClearFiltersButton } from "@/components/shared/ClearFiltersButton";
+import { Search, Plus, LayoutGrid, List as ListIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatCurrency, formatDate } from "@/lib/utils";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { hasActiveFilters } from "@/lib/filters";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import Link from "next/link";
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -29,43 +26,16 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-function SkeletonLinkCard() {
-  return (
-    <Card className="overflow-hidden border-border/50">
-      <CardContent className="p-0">
-        <div className="flex items-center justify-between p-5 border-b border-border/40">
-          <div className="space-y-2">
-            <Skeleton className="h-5 w-40" />
-            <Skeleton className="h-3 w-24" />
-          </div>
-          <Skeleton className="h-6 w-20 rounded-full" />
-        </div>
-        <div className="p-5 flex items-end justify-between gap-4">
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-32" />
-            <Skeleton className="h-4 w-56" />
-          </div>
-          <div className="flex gap-2">
-            <Skeleton className="size-9 rounded-lg" />
-            <Skeleton className="size-9 rounded-lg" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function PaymentLinksPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearch = useDebounce(searchQuery, 400);
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [monthFilter, setMonthFilter] = useState("all");
+  const [filters, setFilters] = useState(DEFAULT_PAYMENT_LINK_FILTERS);
+  const debouncedSearch = useDebounce(filters.search, 400);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const showClear = hasActiveFilters(filters, DEFAULT_PAYMENT_LINK_FILTERS);
 
   const paymentLinks = usePaymentLinks({
     search: debouncedSearch,
-    status: statusFilter,
-    month: monthFilter,
+    status: filters.status,
+    month: filters.month,
   });
 
   const isInitialLoading = paymentLinks.isLoading && !paymentLinks.data;
@@ -95,12 +65,15 @@ export default function PaymentLinksPage() {
           <Input 
             placeholder="Search by link title..." 
             className="pl-9 bg-card/50 border-border/50 h-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={filters.search}
+            onChange={(e) => setFilters((current) => ({ ...current, search: e.target.value }))}
           />
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select
+            value={filters.status}
+            onValueChange={(status) => setFilters((current) => ({ ...current, status }))}
+          >
             <SelectTrigger className="w-[130px] h-10 bg-card/50 border-border/50">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -111,7 +84,10 @@ export default function PaymentLinksPage() {
             </SelectContent>
           </Select>
 
-          <Select value={monthFilter} onValueChange={setMonthFilter}>
+          <Select
+            value={filters.month}
+            onValueChange={(month) => setFilters((current) => ({ ...current, month }))}
+          >
             <SelectTrigger className="w-[140px] h-10 bg-card/50 border-border/50">
               <SelectValue placeholder="Date" />
             </SelectTrigger>
@@ -123,6 +99,11 @@ export default function PaymentLinksPage() {
               <SelectItem value="last-year">Last Year</SelectItem>
             </SelectContent>
           </Select>
+
+          <ClearFiltersButton
+            visible={showClear}
+            onClear={() => setFilters(DEFAULT_PAYMENT_LINK_FILTERS)}
+          />
 
           <div className="flex bg-card/50 border border-border/50 rounded-md p-0.5 ml-2">
             <Button
@@ -146,11 +127,7 @@ export default function PaymentLinksPage() {
       </div>
 
       {isInitialLoading ? (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {Array.from({ length: 4 }, (_, index) => (
-            <SkeletonLinkCard key={index} />
-          ))}
-        </div>
+        <PaymentLinksContentLoader viewMode={viewMode} />
       ) : (
         <>
           {links.length > 0 ? (
@@ -209,8 +186,6 @@ export default function PaymentLinksPage() {
         isRefreshing={isRefreshing}
         itemCount={links.length}
       />
-
-      <FloatingAIAssistant />
     </div>
   );
 }

@@ -9,16 +9,18 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { ChartLoadingShell } from "@/components/charts/ChartLoadingShell";
+import { ChartTooltip } from "@/components/charts/ChartTooltip";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SkeletonChart } from "@/components/ui/skeleton";
 import { formatCompactNumber } from "@/lib/utils";
 import type { DailyRevenuePoint, Period } from "@/types/domain";
+import { cn } from "@/lib/utils";
 
 type RevenueChartProps = {
   data: DailyRevenuePoint[];
   period: Period;
-  isFetching?: boolean;
+  isLoading?: boolean;
   onPeriodChange: (period: Period) => void;
 };
 
@@ -27,7 +29,7 @@ const periods: readonly Period[] = ["7d", "30d", "90d"];
 export function RevenueChart({
   data,
   period,
-  isFetching = false,
+  isLoading = false,
   onPeriodChange,
 }: RevenueChartProps) {
   return (
@@ -41,8 +43,10 @@ export function RevenueChart({
               variant={period === item ? "default" : "ghost"}
               size="sm"
               onClick={() => onPeriodChange(item)}
-              className={`text-xs h-7 px-3 transition-colors ${period === item ? "shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-              disabled={isFetching}
+              className={cn(
+                "text-xs h-7 px-3 interact-premium",
+                period === item ? "shadow-sm" : "text-muted-foreground hover:text-foreground",
+              )}
             >
               {item}
             </Button>
@@ -50,12 +54,8 @@ export function RevenueChart({
         </div>
       </CardHeader>
       <CardContent className="relative min-h-[320px]">
-        {isFetching && (
-          <div className="absolute inset-0 z-10 flex flex-col justify-end p-6">
-            <SkeletonChart showHeader={false} />
-          </div>
-        )}
-        <div className={`h-72 transition-opacity duration-300 ${isFetching ? "opacity-0 invisible" : "opacity-100 visible"}`}>
+        <ChartLoadingShell isLoading={isLoading} className="h-72">
+          <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={data}
@@ -86,19 +86,7 @@ export function RevenueChart({
               />
               <Tooltip
                 cursor={{ stroke: "var(--chart-1)", strokeWidth: 1, strokeDasharray: "4 4" }}
-                contentStyle={{
-                  backgroundColor: "var(--popover)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "8px",
-                  color: "var(--popover-foreground)",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
-                }}
-                itemStyle={{ color: "var(--popover-foreground)", fontSize: "12px", fontWeight: "600" }}
-                labelStyle={{ color: "var(--muted-foreground)", fontSize: "10px", marginBottom: "4px" }}
-                formatter={(value) => [
-                  formatCompactNumber(Number(value)),
-                  "Revenue",
-                ]}
+                content={<ChartTooltip valueLabel="Revenue" />}
               />
               <Area
                 type="linear"
@@ -111,9 +99,9 @@ export function RevenueChart({
               />
             </AreaChart>
           </ResponsiveContainer>
-        </div>
+          </div>
+        </ChartLoadingShell>
       </CardContent>
     </Card>
   );
 }
-

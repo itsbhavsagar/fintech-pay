@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "@/lib/brand";
 import { prisma } from "@/lib/prisma";
 import {
   assertRazorpayConfigured,
@@ -36,7 +37,7 @@ export async function createPaymentLink(input: CreatePaymentLinkInput): Promise<
     currency: input.currency,
     description: input.title,
     customer: {
-      name: user.name ?? user.businessName ?? "PaySense Merchant",
+      name: user.name ?? user.businessName ?? `${PRODUCT_NAME} Merchant`,
       email: user.email,
     },
     notify: {

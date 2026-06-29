@@ -1,18 +1,18 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { jsonError } from "@/lib/api";
-import { requireSessionUser } from "@/lib/auth";
+import { requireSessionUserId } from "@/lib/auth";
 import { toSettlementDto } from "@/lib/mappers";
 import { prisma } from "@/lib/prisma";
 import { getPaginationParams } from "@/lib/utils";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const user = await requireSessionUser();
+    const userId = await requireSessionUserId();
     const { limit, cursor } = getPaginationParams(request, 10);
 
     const settlements = await prisma.settlement.findMany({
       where: {
-        userId: user.id,
+        userId: userId,
       },
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const pendingAgg = await prisma.settlement.aggregate({
       where: {
-        userId: user.id,
+        userId: userId,
         status: { in: ["pending", "processing"] },
       },
       _sum: { amount: true },

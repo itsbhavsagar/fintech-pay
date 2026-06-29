@@ -17,6 +17,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SettingsCard } from "@/components/settings/SettingsCard";
 import { SettingsAction } from "@/components/settings/SettingsAction";
+import { SkeletonSettingsPage } from "@/components/layout/ContentAreaLoader";
 import { useUser } from "@/hooks/useUser";
 import { fetchJson } from "@/lib/fetcher";
 import { maskSecret } from "@/lib/utils";
@@ -113,11 +114,7 @@ export default function SettingsPage() {
   const initials = (currentUser?.name ?? currentUser?.email ?? "?").slice(0, 1).toUpperCase();
 
   if (isUserLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <SkeletonSettingsPage />;
   }
 
   return (
@@ -125,7 +122,7 @@ export default function SettingsPage() {
       <div className="grid gap-6 xl:grid-cols-2 max-w-5xl">
         <SettingsCard title="Profile" icon={UserRound}>
           <div className="flex items-center gap-4 pb-2">
-            <Avatar className="size-16 ring-1 ring-border/50">
+            <Avatar className="size-16 border border-border/50">
               <AvatarImage src={image} alt={name} className="object-cover" />
               <AvatarFallback className="text-xl font-semibold bg-primary/10 text-primary">
                 {initials}
@@ -207,7 +204,7 @@ export default function SettingsPage() {
                   type="url"
                   value={webhookUrl}
                   onChange={(event) => setWebhookUrl(event.target.value)}
-                  placeholder="https://example.com/webhooks/paysense"
+                  placeholder="https://example.com/webhooks/fintechpay"
                   className="bg-background"
                 />
                 <p className="text-xs text-muted-foreground mt-1">

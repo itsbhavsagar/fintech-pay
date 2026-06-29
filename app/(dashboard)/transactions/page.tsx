@@ -17,26 +17,19 @@ import {
 } from "@/components/ui/table";
 import {
   useTransactions,
-  type TransactionFilters as TransactionFiltersValue,
+  DEFAULT_TRANSACTION_FILTERS,
 } from "@/hooks/useTransactions";
 import { fetchJson } from "@/lib/fetcher";
 import type { TransactionDto } from "@/types/domain";
 import { TransactionSkeleton } from "@/components/transactions/TransactionSkeleton";
-
-const defaultFilters: TransactionFiltersValue = {
-  search: "",
-  status: "all",
-  currency: "all",
-  from: "",
-  to: "",
-};
+import { PRODUCT_SLUG } from "@/lib/brand";
 
 function csvEscape(value: string): string {
   return `"${value.replaceAll('"', '""')}"`;
 }
 
 export default function TransactionsPage() {
-  const [filters, setFilters] = useState<TransactionFiltersValue>(defaultFilters);
+  const [filters, setFilters] = useState(DEFAULT_TRANSACTION_FILTERS);
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionDto | null>(null);
 
   const transactionsQuery = useTransactions(filters);
@@ -77,7 +70,7 @@ export default function TransactionsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "paysense-transactions.csv";
+    link.download = `${PRODUCT_SLUG}-transactions.csv`;
     link.click();
     URL.revokeObjectURL(url);
   }

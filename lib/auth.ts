@@ -2,10 +2,18 @@ import { compare, hash } from "bcryptjs";
 import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import {
+  DatabaseUnavailableError,
+  isDatabaseConnectionError,
+  toDatabaseUnavailableError,
+} from "@/lib/db-errors";
 import { prisma } from "@/lib/prisma";
+import { withDatabaseRetry } from "@/lib/prisma-retry";
 import type { UserDto } from "@/types/domain";
 
-const authCookieName = "paysense_token";
+import { AUTH_COOKIE_NAME } from "@/lib/brand";
+
+const authCookieName = AUTH_COOKIE_NAME;
 const tokenTtl = "7d";
 
 type TokenUser = {
@@ -101,21 +109,32 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     return null;
   }
 
-  const user = await prisma.user.findUnique({
-    where: {
-      id: verifiedToken.id,
-    },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      image: true,
-      businessName: true,
-      apiKey: true,
-      webhookUrl: true,
-      createdAt: true,
-    },
-  });
+  let user;
+
+  try {
+    user = await withDatabaseRetry(() =>
+      prisma.user.findUnique({
+        where: {
+          id: verifiedToken.id,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          image: true,
+          businessName: true,
+          apiKey: true,
+          webhookUrl: true,
+          createdAt: true,
+        },
+      }),
+    );
+  } catch (error: unknown) {
+    if (isDatabaseConnectionError(error)) {
+      throw toDatabaseUnavailableError(error);
+    }
+    throw error;
+  }
 
   if (!user) {
     return null;
@@ -137,6 +156,19 @@ export async function requireSessionUser(): Promise<SessionUser> {
   return user;
 }
 
-export function getAuthCookieName(): string {
-  return authCookieName;
+export async function requireSessionUserId(): Promise<string> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(authCookieName)?.value;
+
+  if (!token) {
+    throw new AuthError();
+  }
+
+  const verifiedToken = await verifyAuthToken(token);
+
+  if (!verifiedToken) {
+    throw new AuthError();
+  }
+
+  return verifiedToken.id;
 }

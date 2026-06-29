@@ -181,3 +181,89 @@ textarea {
 .animate-marquee {
   animation: marquee 15s linear infinite;
 }
+
+
+@utility interact-premium {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity, filter;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@utility focus-premium {
+  outline: none;
+  box-shadow: none;
+}
+
+@utility field-premium {
+  outline: none;
+  box-shadow: none;
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@utility menu-item-premium {
+  outline: none;
+  transition-property: color, background-color;
+  transition-duration: 180ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  :where(
+    button,
+    input,
+    select,
+    textarea,
+    [role="button"],
+    [role="menuitem"],
+    [role="option"],
+    [role="combobox"],
+    [role="menuitemcheckbox"],
+    [role="menuitemradio"]
+  ):focus,
+  :where(
+    button,
+    input,
+    select,
+    textarea,
+    [role="button"],
+    [role="menuitem"],
+    [role="option"],
+    [role="combobox"],
+    [role="menuitemcheckbox"],
+    [role="menuitemradio"]
+  ):focus-visible {
+    outline: none;
+    box-shadow: none;
+  }
+
+  :where(input, select, textarea):focus-visible {
+    border-color: color-mix(in oklab, var(--primary) 38%, var(--border));
+  }
+}
+
+.chart-tooltip {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background-color: var(--popover);
+  padding: 0.5rem 0.75rem;
+  color: var(--popover-foreground);
+  box-shadow: 0 8px 24px color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
+.chart-tooltip-label {
+  margin-bottom: 0.25rem;
+  font-size: 0.625rem;
+  color: var(--muted-foreground);
+}
+
+.chart-tooltip-item {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--popover-foreground);
+}
+
+.recharts-tooltip-cursor {
+  fill: color-mix(in oklab, var(--secondary) 45%, transparent);
+}

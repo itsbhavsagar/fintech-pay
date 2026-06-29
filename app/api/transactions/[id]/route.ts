@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { revalidateUserDashboard } from "@/lib/cache";
 import { jsonError } from "@/lib/api";
-import { requireSessionUser } from "@/lib/auth";
+import { requireSessionUserId } from "@/lib/auth";
 import { toTransactionDto } from "@/lib/mappers";
 import { prisma } from "@/lib/prisma";
 
@@ -15,12 +16,12 @@ export async function GET(
   context: TransactionRouteContext,
 ): Promise<NextResponse> {
   try {
-    const user = await requireSessionUser();
+    const userId = await requireSessionUserId();
     const { id } = await context.params;
     const transaction = await prisma.transaction.findFirst({
       where: {
         id,
-        userId: user.id,
+        userId: userId,
       },
     });
 
@@ -42,13 +43,13 @@ export async function POST(
   context: TransactionRouteContext,
 ): Promise<NextResponse> {
   try {
-    const user = await requireSessionUser();
+    const userId = await requireSessionUserId();
     const { id } = await context.params;
 
     const transaction = await prisma.transaction.findFirst({
       where: {
         id,
-        userId: user.id,
+        userId: userId,
       },
     });
 
@@ -72,6 +73,8 @@ export async function POST(
         status: "success",
       },
     });
+
+    revalidateUserDashboard(userId);
 
     return NextResponse.json({
       transaction: toTransactionDto(updated),

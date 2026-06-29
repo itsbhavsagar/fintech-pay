@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/Logo";
+import { PRODUCT_NAME } from "@/lib/brand";
 import Image from "next/image";
 
 export default function ForgotPasswordPage() {
@@ -30,7 +31,7 @@ export default function ForgotPasswordPage() {
           <Image
             width={1920}
             height={1080}
-            src="https://images.pexels.com/photos/18069861/pexels-photo-18069861.png"
+            src="https://images.pexels.com/photos/18069861/pexels-photo-18069861.png?auto=compress&cs=tinysrgb&w=1400&dpr=1&fm=webp&q=82"
             alt="Abstract Art"
             className="h-full w-full object-cover"
           />
@@ -43,7 +44,7 @@ export default function ForgotPasswordPage() {
               <div className="mb-2 flex items-center gap-2">
                 <Logo />
                 <span className="text-4xl font-bold tracking-tight text-foreground">
-                  PaySense
+                  {PRODUCT_NAME}
                 </span>
               </div>
               <h1 className="text-xl font-bold tracking-tight text-foreground">
@@ -72,7 +73,7 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     required
-                    className="h-12 rounded-full mt-3 border-border bg-muted/50 px-6 focus:border-primary focus:ring-primary/20"
+                    className="h-12 rounded-full mt-3 border-border bg-muted/50 px-6 field-premium"
                   />
                 </div>
 

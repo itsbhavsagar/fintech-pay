@@ -31,7 +31,7 @@ model Transaction {
   amount         Float
   currency       String
   status         String
-  paymentState   String    @default("created") // created | authorized | captured | failed | retrying
+  paymentState   String    @default("created")
   country        String
   paymentMethod  String
   razorpayId     String?   @unique

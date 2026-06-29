@@ -1,6 +1,7 @@
 import { ZodError, type ZodType } from "zod";
 import { NextResponse } from "next/server";
 import { AuthError } from "@/lib/auth";
+import { isDatabaseConnectionError } from "@/lib/db-errors";
 
 export async function parseJsonBody<T>(request: Request, schema: ZodType<T>): Promise<T> {
   const payload: unknown = await request.json();
@@ -10,6 +11,16 @@ export async function parseJsonBody<T>(request: Request, schema: ZodType<T>): Pr
 export function jsonError(error: unknown): NextResponse {
   if (error instanceof AuthError) {
     return NextResponse.json({ error: error.message }, { status: 401 });
+  }
+
+  if (isDatabaseConnectionError(error)) {
+    return NextResponse.json(
+      {
+        error: "Unable to reach the database. Check your connection and try again.",
+        code: "DATABASE_UNAVAILABLE",
+      },
+      { status: 503 },
+    );
   }
 
   if (error instanceof ZodError) {

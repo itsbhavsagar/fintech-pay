@@ -1,3 +1,4 @@
+import { DEMO_EMAIL, PRODUCT_NAME, PRODUCT_SLUG } from "../lib/brand";
 import { Prisma, PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -325,7 +326,7 @@ function buildPaymentLinks(
       amount: link.amount,
       currency: link.currency,
       razorpayLinkId: `plink_test_${suffix}`,
-      shortUrl: `https://rzp.io/i/paysense-${suffix}`,
+      shortUrl: `https://rzp.io/i/${PRODUCT_SLUG}-${suffix}`,
       status: link.status,
       expiresAt:
         link.expiresInDays === null
@@ -382,17 +383,17 @@ async function main(): Promise<void> {
 
   await prisma.user.deleteMany({
     where: {
-      email: "demo@paysense.in",
+      email: DEMO_EMAIL,
     },
   });
 
   const user = await prisma.user.create({
     data: {
-      email: "demo@paysense.in",
+      email: DEMO_EMAIL,
       name: "Aarav Mehta",
-      businessName: "PaySense Demo Store",
+      businessName: `${PRODUCT_NAME} Demo Store`,
       password,
-      webhookUrl: "https://example.com/api/paysense/webhook",
+      webhookUrl: `https://example.com/api/${PRODUCT_SLUG}/webhook`,
     },
   });
 
@@ -420,7 +421,7 @@ async function main(): Promise<void> {
     select: { createdAt: true },
   });
 
-  console.log("Seed complete for demo@paysense.in");
+  console.log(`Seed complete for ${DEMO_EMAIL}`);
   console.log(`  Transactions: ${transactionCount}`);
   console.log(`  Payment links: ${paymentLinkSeeds.length}`);
   console.log(`  Settlements: 3`);

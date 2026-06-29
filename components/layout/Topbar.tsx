@@ -108,7 +108,7 @@ export function Topbar({ user: initialUser }: TopbarProps) {
         <Notifications />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-2 hidden sm:flex cursor-pointer px-2 focus-visible:ring-0 focus-visible:ring-offset-0">
+            <Button variant="ghost" className="gap-2 hidden sm:flex cursor-pointer px-2">
               <Avatar className="size-9 rounded-md">
                 <AvatarImage src={currentUser.image ?? undefined} alt={currentUser.name ?? ""} />
                 <AvatarFallback className="rounded-md bg-secondary text-sm font-semibold">

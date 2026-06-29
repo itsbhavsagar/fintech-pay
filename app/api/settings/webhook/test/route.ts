@@ -1,3 +1,4 @@
+import { PRODUCT_SLUG } from "@/lib/brand";
 import { NextResponse } from "next/server";
 import { jsonError } from "@/lib/api";
 import { requireSessionUser } from "@/lib/auth";
@@ -25,7 +26,7 @@ export async function POST(): Promise<NextResponse> {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        event: "paysense.webhook.test",
+        event: `${PRODUCT_SLUG}.webhook.test`,
         createdAt: new Date().toISOString(),
       }),
     });

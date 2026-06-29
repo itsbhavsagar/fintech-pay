@@ -1,19 +1,21 @@
 "use client";
 
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { ChartLoadingShell } from "@/components/charts/ChartLoadingShell";
+import { ChartTooltip } from "@/components/charts/ChartTooltip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCompactNumber } from "@/lib/utils";
 import type { BreakdownPoint } from "@/types/domain";
 
 type CountryMapProps = {
   data: BreakdownPoint[];
+  isLoading?: boolean;
 };
 
-export function CountryMap({ data }: CountryMapProps) {
-  const chartData = data.slice(0, 6).map(item => ({
+export function CountryMap({ data, isLoading = false }: CountryMapProps) {
+  const chartData = data.slice(0, 6).map((item) => ({
     name: item.name,
     revenue: item.revenue,
-    transactions: item.value
+    transactions: item.value,
   }));
 
   return (
@@ -22,7 +24,8 @@ export function CountryMap({ data }: CountryMapProps) {
         <CardTitle>Revenue by Country</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[240px] w-full">
+        <ChartLoadingShell isLoading={isLoading} className="h-[240px] w-full">
+          <div className="h-[240px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
@@ -38,17 +41,7 @@ export function CountryMap({ data }: CountryMapProps) {
                 width={60}
                 className="text-xs font-medium"
               />
-              <Tooltip
-                cursor={{ fill: "var(--secondary)", opacity: 0.4 }}
-                contentStyle={{
-                  backgroundColor: "var(--popover)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "8px",
-                  color: "var(--popover-foreground)",
-                }}
-                itemStyle={{ color: "var(--popover-foreground)" }}
-                formatter={(value) => [formatCompactNumber(Number(value)), "Revenue"]}
-              />
+              <Tooltip content={<ChartTooltip valueLabel="Revenue" />} />
               <Bar
                 dataKey="revenue"
                 fill="var(--chart-1)"
@@ -57,9 +50,9 @@ export function CountryMap({ data }: CountryMapProps) {
               />
             </BarChart>
           </ResponsiveContainer>
-        </div>
+          </div>
+        </ChartLoadingShell>
       </CardContent>
     </Card>
   );
 }
-

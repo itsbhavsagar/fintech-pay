@@ -1,95 +1,27 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, X, Loader2, Maximize2, Minimize2 } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Send, Sparkles, X, Loader2, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-export function FloatingAIAssistant() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [position, setPosition] = useState({ x: -1, y: -1 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({
-    mouseX: 0,
-    mouseY: 0,
-    offsetX: 0,
-    offsetY: 0,
-  });
-  const [hasMoved, setHasMoved] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+import { AssistantSuggestions } from "@/components/assistant/AssistantSuggestions";
+import { AI_NUDGE_DISMISSED_KEY } from "@/lib/brand";
+import { cn } from "@/lib/utils";
 
-  useEffect(() => {
-    if (position.x === -1 && typeof window !== "undefined") {
-      const width = containerRef.current?.offsetWidth ?? 200;
-      setPosition({
-        x: (window.innerWidth - width) / 2,
-        y: window.innerHeight - 80,
-      });
-    }
-  }, [position.x]);
-  
+const NUDGE_DELAY_MS = 1800;
+
+export function FloatingAIAssistant() {
+  const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+  const [showNudge, setShowNudge] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const [query, setQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
   const [streamingResponse, setStreamingResponse] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-
-  const onMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setHasMoved(false);
-    setDragStart({
-      mouseX: e.clientX,
-      mouseY: e.clientY,
-      offsetX: e.clientX - position.x,
-      offsetY: e.clientY - position.y,
-    });
-  };
-
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      if (!isDragging) return;
-      
-      const deltaX = Math.abs(e.clientX - dragStart.mouseX);
-      const deltaY = Math.abs(e.clientY - dragStart.mouseY);
-      
-      if (deltaX > 5 || deltaY > 5) {
-        setHasMoved(true);
-      }
-
-      const rect = containerRef.current?.getBoundingClientRect();
-      const width = rect?.width ?? 200;
-      const height = rect?.height ?? 50;
-      
-      const padding = 16;
-      const newX = e.clientX - dragStart.offsetX;
-      const newY = e.clientY - dragStart.offsetY;
-      
-      const minX = padding;
-      const maxX = window.innerWidth - width - padding;
-      const minY = padding;
-      const maxY = window.innerHeight - height - padding;
-
-      setPosition({
-        x: Math.max(minX, Math.min(maxX, newX)),
-        y: Math.max(minY, Math.min(maxY, newY)),
-      });
-    };
-
-    const onMouseUp = () => {
-      setIsDragging(false);
-    };
-
-    if (isDragging) {
-      window.addEventListener("mousemove", onMouseMove);
-      window.addEventListener("mouseup", onMouseUp);
-    }
-
-    return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-  }, [isDragging, dragStart]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -97,19 +29,60 @@ export function FloatingAIAssistant() {
     }
   }, [streamingResponse]);
 
-  const handleQuerySubmit = async () => {
-    if (!query.trim()) return;
-    setSubmittedQuery(query);
+  function dismissNudge() {
+    setShowNudge(false);
+    localStorage.setItem(AI_NUDGE_DISMISSED_KEY, "1");
+  }
+
+  function openAssistant() {
+    dismissNudge();
+    setIsOpen(true);
+  }
+
+  useEffect(() => {
+    if (pathname !== "/" || isOpen) {
+      setShowNudge(false);
+      return;
+    }
+
+    if (localStorage.getItem(AI_NUDGE_DISMISSED_KEY)) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setShowNudge(true);
+    }, NUDGE_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [pathname, isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      dismissNudge();
+    }
+  }, [isOpen]);
+
+  function closePanel() {
+    setIsOpen(false);
+    setSubmittedQuery("");
+    setStreamingResponse("");
+    setQuery("");
+  }
+
+  const handleQuerySubmit = async (questionText?: string) => {
+    const prompt = (questionText ?? query).trim();
+    if (!prompt || isStreaming) return;
+
+    setSubmittedQuery(prompt);
     setStreamingResponse("");
     setIsStreaming(true);
     setQuery("");
-    if (!isExpanded) setIsExpanded(true);
 
     try {
       const response = await fetch("/api/intelligence/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query: prompt }),
       });
 
       if (!response.ok) throw new Error("Failed to fetch response");
@@ -141,152 +114,176 @@ export function FloatingAIAssistant() {
       }
     } catch (error) {
       setStreamingResponse(
-        `Error: ${error instanceof Error ? error.message : "Failed to get response"}. Please try again.`
+        `Error: ${error instanceof Error ? error.message : "Failed to get response"}. Please try again.`,
       );
       setIsStreaming(false);
     }
   };
 
-  if (!isOpen) {
-    return (
-      <div 
-        ref={containerRef}
-        className="fixed z-50 select-none top-0 left-0"
-        style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
-        onMouseDown={onMouseDown}
-      >
-        <Button
-          onClick={() => !hasMoved && setIsOpen(true)}
-          className={`h-12 px-6 rounded-full shadow-2xl bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-3 border border-white/10 group transition-all active:scale-95 ${
-            isDragging ? "cursor-grabbing opacity-80 scale-105" : "cursor-grab"
-          }`}
-        >
-          <Sparkles className="size-4 group-hover:animate-pulse" />
-          <span className="text-sm font-medium">Ask PaySense Intelligence</span>
-        </Button>
-      </div>
-    );
-  }
-
   return (
-    <div 
-      ref={containerRef}
-      className={`fixed top-0 left-0 z-50 transition-all duration-300 ease-in-out ${
-        isDragging ? "transition-none" : ""
-      } ${
-        isExpanded ? "w-[90vw] max-w-2xl h-[500px]" : "w-[90vw] max-w-xl h-auto"
-      }`}
-      style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
-    >
-      <div className="bg-card/80 backdrop-blur-xl border border-primary/20 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] rounded-2xl flex flex-col overflow-hidden h-full">
-        {/* Header - Now Draggable */}
-        <div 
-          className={`px-4 py-3 border-b flex items-center justify-between bg-secondary/30 select-none ${
-            isDragging ? "cursor-grabbing" : "cursor-grab"
-          }`}
-          onMouseDown={onMouseDown}
+    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
+      {showNudge && !isOpen ? (
+        <div
+          className={cn(
+            "relative w-[min(260px,calc(100vw-3rem))]",
+            "animate-in fade-in-0 slide-in-from-bottom-2 duration-300",
+          )}
+          role="status"
+          aria-live="polite"
         >
-          <div className="flex items-center gap-2">
-            <Sparkles className="size-4 text-primary animate-pulse" />
-            <span className="text-xs font-bold uppercase tracking-widest">Intelligence Assistant</span>
-            <Badge variant="secondary" className="text-[9px] h-4 uppercase">AI Beta</Badge>
-          </div>
-          <div className="flex items-center gap-1">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="size-8 rounded-lg" 
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
-              {isExpanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="size-8 rounded-lg hover:bg-destructive/10 hover:text-destructive" 
-              onClick={() => {
-                setIsOpen(false);
-                setIsExpanded(false);
-                setSubmittedQuery("");
-                setStreamingResponse("");
-              }}
-            >
-              <X className="size-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Content Area */}
-        <div 
-          ref={scrollRef}
-          className={`flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar ${
-            !submittedQuery && !isStreaming ? "flex items-center justify-center opacity-40" : ""
-          }`}
-        >
-          {!submittedQuery && !isStreaming ? (
-            <div className="text-center space-y-2">
-              <Sparkles className="size-8 mx-auto text-primary/50" />
-              <p className="text-sm font-medium">How can I help with your analytics today?</p>
-              <p className="text-xs opacity-70">Try: &quot;Why did success rate drop?&quot;</p>
+          <div className="rounded-xl border border-primary/20 bg-card p-3 shadow-lg">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="size-3.5 shrink-0 text-primary" />
+                <p className="text-[11px] font-semibold">AI Assistant</p>
+              </div>
+              <button
+                type="button"
+                onClick={dismissNudge}
+                className="rounded-md p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label="Dismiss"
+              >
+                <X className="size-3.5" />
+              </button>
             </div>
-          ) : (
-            <>
-              {submittedQuery && (
-                <div className="space-y-1 bg-secondary/50 rounded-xl p-3 border border-border/50">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Your Question</p>
-                  <p className="text-sm">{submittedQuery}</p>
-                </div>
-              )}
-                <div className="space-y-2">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-2">
-                    <Sparkles className="size-3" />
-                    PaySense Intelligence
-                  </p>
-                  <div className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
+            <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+              Ask about revenue, failed payments, or anomalies — in plain English.
+            </p>
+            <Button
+              type="button"
+              size="sm"
+              className="mt-2 h-7 px-3 text-[11px]"
+              onClick={openAssistant}
+            >
+              Try it
+            </Button>
+          </div>
+          <div
+            className="absolute -bottom-1.5 right-5 size-2.5 rotate-45 border-r border-b border-primary/20 bg-card"
+            aria-hidden
+          />
+        </div>
+      ) : null}
+
+      {isOpen ? (
+        <div
+          className={cn(
+            "flex w-[min(360px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-primary/20 bg-card/95 shadow-2xl backdrop-blur-xl",
+            "h-[min(480px,calc(100vh-7rem))] animate-in fade-in-0 slide-in-from-bottom-4 duration-200",
+          )}
+        >
+          <div className="flex items-center justify-between border-b bg-secondary/30 px-3 py-2">
+            <div className="flex min-w-0 items-center gap-1.5">
+              <Sparkles className="size-3.5 shrink-0 text-primary" />
+              <span className="truncate text-[11px] font-semibold text-foreground">
+                Assistant
+              </span>
+              <Badge variant="secondary" className="h-3.5 shrink-0 px-1 text-[8px] uppercase">
+                Beta
+              </Badge>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 shrink-0 rounded-md hover:bg-destructive/10 hover:text-destructive"
+              onClick={closePanel}
+              aria-label="Close chat"
+            >
+              <X className="size-3.5" />
+            </Button>
+          </div>
+
+          <div
+            ref={scrollRef}
+            className={cn(
+              "flex-1 overflow-y-auto p-3 custom-scrollbar",
+              !submittedQuery && !isStreaming && "flex items-center justify-center",
+            )}
+          >
+            {!submittedQuery && !isStreaming ? (
+              <div className="w-full space-y-2 px-0.5">
+                <p className="text-[11px] text-muted-foreground">
+                  Ask about revenue, transactions, or payment links.
+                </p>
+                <AssistantSuggestions
+                  variant="compact"
+                  disabled={isStreaming}
+                  onSelect={(question) => void handleQuerySubmit(question)}
+                />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {submittedQuery ? (
+                  <div className="ml-4 rounded-lg rounded-tr-sm bg-primary px-2.5 py-1.5 text-primary-foreground">
+                    <p className="text-[11px] leading-relaxed">{submittedQuery}</p>
+                  </div>
+                ) : null}
+                <div className="mr-4 rounded-lg rounded-tl-sm border border-border/50 bg-secondary/50 px-2.5 py-1.5">
+                  <div className="text-[11px] leading-relaxed text-foreground/90 whitespace-pre-wrap">
                     {streamingResponse.split(/(\*\*.*?\*\*)/g).map((part, i) => {
                       if (part.startsWith("**") && part.endsWith("**")) {
-                        return <strong key={i} className="font-bold text-foreground">{part.slice(2, -2)}</strong>;
+                        return (
+                          <strong key={i} className="font-bold text-foreground">
+                            {part.slice(2, -2)}
+                          </strong>
+                        );
                       }
                       return part;
                     })}
-                    {isStreaming && <span className="inline-block w-1.5 h-4 ml-1 bg-primary animate-pulse align-middle" />}
+                    {isStreaming ? (
+                      <span className="ml-1 inline-block h-3 w-1 animate-pulse bg-primary align-middle" />
+                    ) : null}
                   </div>
                 </div>
-            </>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
 
-        {/* Input Bar */}
-        <div className="p-4 bg-secondary/20">
-          <div className="relative group">
-            <Input
-              placeholder="Ask anything about your transaction patterns..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleQuerySubmit();
-                }
-              }}
-              className="pr-12 h-12 bg-card/50 border-primary/20 focus-visible:ring-primary/30 rounded-xl"
-              disabled={isStreaming}
-            />
-            <Button
-              onClick={handleQuerySubmit}
-              disabled={!query.trim() || isStreaming}
-              size="icon"
-              className="absolute right-1.5 top-1.5 h-9 w-9 rounded-lg shadow-lg"
-            >
-              {isStreaming ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Send className="size-4" />
-              )}
-            </Button>
+          <div className="border-t bg-secondary/20 p-2.5">
+            <div className="relative">
+              <Input
+                placeholder="Type a message…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    void handleQuerySubmit();
+                  }
+                }}
+                className="h-9 rounded-lg border-primary/20 bg-card/50 pr-10 text-[11px]"
+                disabled={isStreaming}
+              />
+              <Button
+                onClick={() => void handleQuerySubmit()}
+                disabled={!query.trim() || isStreaming}
+                size="icon"
+                className="absolute right-1 top-1 size-7 rounded-md"
+                aria-label="Send message"
+              >
+                {isStreaming ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <Send className="size-3.5" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      ) : null}
+
+      <Button
+        onClick={() => (isOpen ? closePanel() : openAssistant())}
+        className={cn(
+          "interact-premium size-14 rounded-full shadow-2xl",
+          isOpen
+            ? "bg-muted text-foreground hover:bg-muted/80"
+            : "bg-primary text-primary-foreground hover:bg-primary/90",
+        )}
+        aria-label={isOpen ? "Close chat" : "Open AI assistant"}
+      >
+        {isOpen ? <X className="size-5" /> : <MessageCircle className="size-5" />}
+      </Button>
     </div>
   );
 }

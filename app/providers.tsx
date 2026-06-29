@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider, useTheme } from "next-themes";
 import { Toaster } from "sonner";
-import { useState } from "react";
+import { QUERY_GC_TIME, QUERY_STALE_TIME } from "@/lib/query-config";
 
 type ProvidersProps = {
   children: React.ReactNode;
@@ -40,9 +41,10 @@ export function Providers({ children }: ProvidersProps) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000,
-            gcTime: 5 * 60 * 1000,
+            staleTime: QUERY_STALE_TIME,
+            gcTime: QUERY_GC_TIME,
             retry: 1,
+            refetchOnMount: false,
             refetchOnWindowFocus: false,
           },
         },

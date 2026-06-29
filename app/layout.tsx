@@ -13,9 +13,11 @@ const schibsted = Schibsted_Grotesk({
   variable: "--font-schibsted",
 });
 
+import { PRODUCT_NAME } from "@/lib/brand";
+
 export const metadata: Metadata = {
-  title: "PaySense",
-  description: "Merchant payment dashboard for global payment operations.",
+  title: PRODUCT_NAME,
+  description: "Merchant payment dashboard for tracking transactions, links, and settlements.",
   icons: {
     icon: "/favicon.svg",
     apple: "/apple-touch-icon.svg",

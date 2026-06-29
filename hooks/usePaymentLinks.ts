@@ -2,6 +2,7 @@
 
 import { keepPreviousData, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchJson } from "@/lib/fetcher";
+import { QUERY_STALE_TIME } from "@/lib/query-config";
 import type { PaymentLinkDto } from "@/types/domain";
 
 export type CreatePaymentLinkInput = {
@@ -15,6 +16,18 @@ export type PaymentLinkFilters = {
   search?: string;
   status?: string;
   month?: string;
+};
+
+export type PaymentLinkFilterState = {
+  search: string;
+  status: string;
+  month: string;
+};
+
+export const DEFAULT_PAYMENT_LINK_FILTERS: PaymentLinkFilterState = {
+  search: "",
+  status: "all",
+  month: "all",
 };
 
 type PaymentLinksResponse = {
@@ -37,8 +50,9 @@ export function usePaymentLinks(filters?: PaymentLinkFilters) {
     },
     getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
     placeholderData: keepPreviousData,
-    staleTime: 60000,
-    gcTime: 300000,
+    staleTime: QUERY_STALE_TIME,
+    gcTime: QUERY_STALE_TIME * 2,
+    refetchOnMount: false,
   });
 }
 

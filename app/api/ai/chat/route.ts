@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { buildMerchantContext } from "@/lib/analytics";
+import { buildAssistantMessages } from "@/lib/assistant";
 import { jsonError, parseJsonBody } from "@/lib/api";
 import { requireSessionUser } from "@/lib/auth";
 import { retrieveRelevantChunks } from "@/lib/cohere";
@@ -11,12 +11,6 @@ const chatSchema = z.object({
   sessionId: z.string().min(1).nullish(),
   message: z.string().min(1).max(1_000),
 });
-
-const baseSystemPrompt = `You are a payment analytics assistant for PaySense.
-You have access to this merchant's transaction data.
-Answer questions about revenue, success rates, unusual patterns, and payment insights.
-Only answer payment-related questions.
-Keep answers under 100 words. No markdown.`;
 
 function toGroqHistoryMessage(
   role: string,
@@ -64,8 +58,7 @@ export async function POST(request: Request): Promise<Response> {
       },
     });
 
-    const [merchantContext, chunkCount] = await Promise.all([
-      buildMerchantContext(user.id),
+    const [chunkCount] = await Promise.all([
       prisma.chunk.count({
         where: {
           userId: user.id,
@@ -78,7 +71,7 @@ export async function POST(request: Request): Promise<Response> {
         : [];
     const ragContext =
       relevantChunks.length > 0
-        ? `\nMerchant docs:\n${relevantChunks.map((chunk) => chunk.text).join("\n---\n")}`
+        ? `\n\n=== MERCHANT NOTES (RAG) ===\n${relevantChunks.map((chunk) => chunk.text).join("\n---\n")}`
         : "";
     const history = await prisma.aiMessage.findMany({
       where: {
@@ -91,15 +84,14 @@ export async function POST(request: Request): Promise<Response> {
     });
     const historyMessages = history
       .reverse()
+      .slice(0, -1)
       .map((message) => toGroqHistoryMessage(message.role, message.content))
       .filter((message): message is GroqChatMessage => message !== null);
-    const messages: GroqChatMessage[] = [
-      {
-        role: "system",
-        content: `${baseSystemPrompt}\n\nCurrent merchant context:\n${merchantContext}${ragContext}`,
-      },
-      ...historyMessages,
-    ];
+
+    const messages = await buildAssistantMessages(user.id, input.message, {
+      history: historyMessages,
+      ragContext,
+    });
     const encoder = new TextEncoder();
     const stream = new ReadableStream<Uint8Array>({
       async start(controller) {
@@ -118,6 +110,7 @@ export async function POST(request: Request): Promise<Response> {
                 },
               });
             },
+            { maxCompletionTokens: 500 },
           );
           controller.close();
         } catch (error: unknown) {

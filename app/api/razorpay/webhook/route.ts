@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { jsonError } from "@/lib/api";
+import { revalidateUserDashboard } from "@/lib/cache";
 import { prisma } from "@/lib/prisma";
 import { verifyRazorpayWebhookSignature } from "@/lib/razorpay";
 import { isRecord } from "@/lib/utils";
@@ -152,6 +153,8 @@ export async function POST(request: Request): Promise<NextResponse> {
         },
       });
     }
+
+    revalidateUserDashboard(userId);
 
     return NextResponse.json({ received: true });
   } catch (error: unknown) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { Download, Search } from "lucide-react";
+import { ClearFiltersButton } from "@/components/shared/ClearFiltersButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,7 +11,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { TransactionFilters as TransactionFiltersValue } from "@/hooks/useTransactions";
+import {
+  applyDateRangeChange,
+  getDateRangeInputBounds,
+  getLocalDateString,
+} from "@/lib/date-range";
+import { hasActiveFilters } from "@/lib/filters";
+import {
+  DEFAULT_TRANSACTION_FILTERS,
+  type TransactionFilters as TransactionFiltersValue,
+} from "@/hooks/useTransactions";
 import type { TransactionStatus } from "@/types/domain";
 
 type TransactionFiltersProps = {
@@ -23,7 +33,10 @@ type TransactionFiltersProps = {
 const statuses: readonly (TransactionStatus | "all")[] = ["all", "success", "failed", "pending"];
 
 export function TransactionFilters({ value, currencies, onChange, onExport }: TransactionFiltersProps) {
-  const today = new Date().toISOString().split("T")[0];
+  const today = getLocalDateString();
+  const fromBounds = getDateRangeInputBounds(value, "from", today);
+  const toBounds = getDateRangeInputBounds(value, "to", today);
+  const showClear = hasActiveFilters(value, DEFAULT_TRANSACTION_FILTERS);
 
   return (
     <div className="grid gap-3 rounded-lg border bg-card p-4 md:grid-cols-[1.5fr_repeat(4,1fr)_auto]">
@@ -67,22 +80,41 @@ export function TransactionFilters({ value, currencies, onChange, onExport }: Tr
       <div className="flex items-center gap-2">
         <Input
           type="date"
+          aria-label="Start date"
           value={value.from}
-          max={today}
-          onChange={(event) => onChange({ ...value, from: event.target.value })}
+          max={fromBounds.max}
+          onChange={(event) =>
+            onChange({
+              ...value,
+              ...applyDateRangeChange(value, "from", event.target.value, today),
+            })
+          }
         />
         <span className="text-xs font-medium text-muted-foreground">TO</span>
         <Input
           type="date"
+          aria-label="End date"
           value={value.to}
-          max={today}
-          onChange={(event) => onChange({ ...value, to: event.target.value })}
+          min={toBounds.min}
+          max={toBounds.max}
+          onChange={(event) =>
+            onChange({
+              ...value,
+              ...applyDateRangeChange(value, "to", event.target.value, today),
+            })
+          }
         />
       </div>
-      <Button variant="outline" onClick={onExport}>
-        <Download className="size-4" />
-        Export
-      </Button>
+      <div className="flex items-center gap-1">
+        <ClearFiltersButton
+          visible={showClear}
+          onClear={() => onChange(DEFAULT_TRANSACTION_FILTERS)}
+        />
+        <Button variant="outline" onClick={onExport}>
+          <Download className="size-4" />
+          Export
+        </Button>
+      </div>
     </div>
   );
 }

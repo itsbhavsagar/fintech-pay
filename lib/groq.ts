@@ -17,6 +17,10 @@ export async function streamChat(
   messages: GroqChatMessage[],
   onChunk: (chunk: string) => void,
   onDone?: (content: string) => Promise<void> | void,
+  options?: {
+    maxCompletionTokens?: number;
+    temperature?: number;
+  },
 ): Promise<void> {
   assertGroqConfigured();
 
@@ -24,8 +28,8 @@ export async function streamChat(
     model: "llama-3.1-8b-instant",
     messages,
     stream: true,
-    temperature: 0.2,
-    max_completion_tokens: 300,
+    temperature: options?.temperature ?? 0.25,
+    max_completion_tokens: options?.maxCompletionTokens ?? 300,
   });
 
   let fullContent = "";

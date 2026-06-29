@@ -2,14 +2,16 @@
 
 import { CheckCircle2 } from "lucide-react";
 import { PolarAngleAxis, RadialBar, RadialBarChart, ResponsiveContainer } from "recharts";
+import { ChartLoadingShell } from "@/components/charts/ChartLoadingShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatPercent } from "@/lib/utils";
 
 type SuccessRateGaugeProps = {
   value: number;
+  isLoading?: boolean;
 };
 
-export function SuccessRateGauge({ value }: SuccessRateGaugeProps) {
+export function SuccessRateGauge({ value, isLoading = false }: SuccessRateGaugeProps) {
   const data = [{ value }];
 
   return (
@@ -19,7 +21,8 @@ export function SuccessRateGauge({ value }: SuccessRateGaugeProps) {
         <CheckCircle2 className="size-4 text-success" />
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col items-center justify-center">
+        <ChartLoadingShell isLoading={isLoading}>
+          <div className="flex flex-col items-center justify-center">
           <div className="relative h-[180px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <RadialBarChart
@@ -55,7 +58,8 @@ export function SuccessRateGauge({ value }: SuccessRateGaugeProps) {
           <p className="max-w-[200px] text-center text-xs text-muted-foreground">
             Your success rate is <span className="font-semibold text-foreground">{(value).toFixed(1)}%</span> higher than the industry average this month.
           </p>
-        </div>
+          </div>
+        </ChartLoadingShell>
       </CardContent>
     </Card>
   );

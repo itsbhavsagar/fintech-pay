@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetchJson } from "@/lib/fetcher";
+import { NOTIFICATIONS_POLL_INTERVAL } from "@/lib/query-config";
 import { cn } from "@/lib/utils";
 
 type Notification = {
@@ -28,9 +29,10 @@ export function Notifications() {
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
 
   const { data } = useQuery({
-    queryKey: ["intelligence"],
-    queryFn: () => fetchJson<any>("/api/intelligence"),
-    refetchInterval: 30000, 
+    queryKey: ["notifications"],
+    queryFn: () => fetchJson<{ anomalies: Notification[] }>("/api/notifications"),
+    refetchInterval: NOTIFICATIONS_POLL_INTERVAL,
+    staleTime: NOTIFICATIONS_POLL_INTERVAL,
   });
 
   const notifications = useMemo(() => {
@@ -63,7 +65,7 @@ export function Notifications() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative h-9 w-9 rounded-full focus-visible:ring-0 focus-visible:ring-offset-0"
+          className="relative h-9 w-9 rounded-full"
           aria-label="Notifications"
         >
           <Bell className="size-5" />

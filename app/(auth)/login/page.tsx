@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { fetchJson } from "@/lib/fetcher";
 import { Logo } from "@/components/Logo";
+import { DEMO_EMAIL, PRODUCT_NAME } from "@/lib/brand";
 
 import { useEffect } from "react";
 import Image from "next/image";
@@ -29,7 +30,7 @@ export default function LoginPage() {
       setPassword(savedPassword);
       setRememberMe(true);
     } else {
-      setEmail("demo@paysense.in");
+      setEmail(DEMO_EMAIL);
       setPassword("demo123");
     }
   }, []);
@@ -88,7 +89,7 @@ export default function LoginPage() {
               <div className="mb-2 flex items-center gap-2">
                 <Logo />
                 <span className="text-4xl font-bold tracking-tight text-foreground">
-                  PaySense
+                  {PRODUCT_NAME}
                 </span>
               </div>
               <h1 className="text-xl font-bold tracking-tight text-foreground/80">
@@ -114,7 +115,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   required
-                  className="h-12 rounded-full border-border bg-muted/50 px-6 focus:border-primary focus:ring-primary/20 mt-2"
+                  className="h-12 rounded-full border-border bg-muted/50 px-6 field-premium mt-2"
                 />
               </div>
 
@@ -135,7 +136,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   required
-                  className="h-12 rounded-full border-border bg-muted/50 px-6 focus:border-primary focus:ring-primary/20"
+                  className="h-12 rounded-full border-border bg-muted/50 px-6 field-premium"
                 />
               </div>
 
@@ -145,7 +146,7 @@ export default function LoginPage() {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="rounded border-border text-primary focus:ring-primary"
+                    className="rounded border-border text-primary focus-premium"
                   />
                   Remember login
                 </label>

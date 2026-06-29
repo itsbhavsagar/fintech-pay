@@ -3,9 +3,9 @@
 import {
   keepPreviousData,
   useInfiniteQuery,
-  useQuery,
 } from "@tanstack/react-query";
 import { fetchJson } from "@/lib/fetcher";
+import { QUERY_STALE_TIME } from "@/lib/query-config";
 import type {
   TransactionDto,
   TransactionsResponseDto,
@@ -18,6 +18,14 @@ export type TransactionFilters = {
   currency: string;
   from: string;
   to: string;
+};
+
+export const DEFAULT_TRANSACTION_FILTERS: TransactionFilters = {
+  search: "",
+  status: "all",
+  currency: "all",
+  from: "",
+  to: "",
 };
 
 function buildTransactionsUrl(
@@ -38,7 +46,15 @@ function buildTransactionsUrl(
   return `/api/transactions?${params.toString()}`;
 }
 
-export function useTransactions(filters: TransactionFilters) {
+export function useTransactions(
+  filters: TransactionFilters,
+  options?: {
+    initialPage?: {
+      transactions: TransactionDto[];
+      nextCursor: string | null;
+    };
+  },
+) {
   const safeFilters = {
     search: filters?.search ?? "",
     status: filters?.status ?? "all",
@@ -73,21 +89,15 @@ export function useTransactions(filters: TransactionFilters) {
     getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
 
     placeholderData: keepPreviousData,
-    staleTime: 60000,
-    gcTime: 300000,
-  });
-}
-
-export function useTransaction(id: string | null) {
-  return useQuery({
-    queryKey: ["transaction", id],
-    enabled: !!id,
-    queryFn: async () => {
-      const res = await fetchJson<{ transaction: TransactionDto }>(
-        `/api/transactions/${id}`,
-      );
-      return res?.transaction ?? null;
-    },
-    staleTime: 60000,
+    staleTime: QUERY_STALE_TIME,
+    gcTime: QUERY_STALE_TIME * 2,
+    refetchOnMount: false,
+    initialData: options?.initialPage
+      ? {
+          pages: [options.initialPage],
+          pageParams: [null],
+        }
+      : undefined,
+    initialDataUpdatedAt: options?.initialPage ? Date.now() : undefined,
   });
 }

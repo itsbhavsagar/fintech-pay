@@ -2,6 +2,7 @@
 
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import { fetchJson } from "@/lib/fetcher";
+import { QUERY_STALE_TIME } from "@/lib/query-config";
 import type { SettlementDto } from "@/types/domain";
 
 export type SettlementsResponse = {
@@ -26,7 +27,8 @@ export function useSettlements() {
     },
     getNextPageParam: (lastPage) => lastPage?.nextCursor ?? undefined,
     placeholderData: keepPreviousData,
-    staleTime: 60000,
-    gcTime: 300000,
+    staleTime: QUERY_STALE_TIME,
+    gcTime: QUERY_STALE_TIME * 2,
+    refetchOnMount: false,
   });
 }

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { fetchJson } from "@/lib/fetcher";
 import { Logo } from "@/components/Logo";
+import { PRODUCT_NAME } from "@/lib/brand";
 import Image from "next/image";
 
 export default function RegisterPage() {
@@ -67,14 +68,14 @@ export default function RegisterPage() {
               <div className="mb-2 flex items-center gap-2">
                 <Logo />
                 <span className="text-4xl font-bold tracking-tight text-foreground">
-                  PaySense
+                  {PRODUCT_NAME}
                 </span>
               </div>
               <h1 className="text-xl font-bold tracking-tight text-foreground">
                 Create your account
               </h1>
               <p className="text-sm text-muted-foreground">
-                Join PaySense and start managing your payments
+                Join {PRODUCT_NAME} and start managing your payments
               </p>
             </div>
 
@@ -92,7 +93,7 @@ export default function RegisterPage() {
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   required
-                  className="h-11 rounded-full border-border bg-muted/50 px-6 focus:border-primary focus:ring-primary/20"
+                  className="h-11 rounded-full border-border bg-muted/50 px-6 field-premium"
                 />
               </div>
 
@@ -109,7 +110,7 @@ export default function RegisterPage() {
                   value={businessName}
                   onChange={(event) => setBusinessName(event.target.value)}
                   required
-                  className="h-11 rounded-full border-border bg-muted/50 px-6 focus:border-primary focus:ring-primary/20"
+                  className="h-11 rounded-full border-border bg-muted/50 px-6 field-premium"
                 />
               </div>
 
@@ -127,7 +128,7 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   required
-                  className="h-11 rounded-full border-border bg-muted/50 px-6 focus:border-primary focus:ring-primary/20"
+                  className="h-11 rounded-full border-border bg-muted/50 px-6 field-premium"
                 />
               </div>
 
@@ -146,7 +147,7 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   required
-                  className="h-11 rounded-full border-border bg-muted/50 px-6 focus:border-primary focus:ring-primary/20"
+                  className="h-11 rounded-full border-border bg-muted/50 px-6 field-premium"
                 />
               </div>
 
